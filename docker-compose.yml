@@ -1,0 +1,12 @@
+version: '3.3'
+
+services:
+  mysql:
+    image: mysql:latest
+    environment:
+      - MYSQL_DATABASE=e-commerce-app-01
+      - MYSQL_ROOT_PASSWORD=123456
+    ports:
+      - '3306:3306'
+    volumes:
+      - ./mysql_data:/var/lib/mysql
