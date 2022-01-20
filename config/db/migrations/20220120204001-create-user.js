@@ -9,23 +9,31 @@ module.exports = {
         type: Sequelize.INTEGER,
       },
       name: {
-        // NOTE HERE I NEED TO APPLY ALL CONSTRAINS
         type: Sequelize.STRING,
+        allowNull: false,
       },
       email: {
         type: Sequelize.STRING,
+        unique: true,
+        allowNull: true,
       },
       password: {
         type: Sequelize.STRING,
+        allowNull: false,
       },
       emailVerifiedAt: {
         type: Sequelize.DATE,
+        defaultValue: null,
       },
       token: {
         type: Sequelize.STRING,
+        allowNull: true,
+        defaultValue: null,
       },
       tokenExpiration: {
         type: Sequelize.DATE,
+        allowNull: true,
+        defaultValue: null,
       },
       createdAt: {
         allowNull: false,

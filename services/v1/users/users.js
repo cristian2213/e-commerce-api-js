@@ -1,11 +1,10 @@
 const { Op } = require('sequelize');
 const argon2 = require('argon2');
 const { StatusCodes, ReasonPhrases } = require('http-status-codes');
-// import User from '../../../models/v1/users/user';
+const { User, Role } = require('../../../config/db/models/index');
 const errorsHandler = require('../../../helpers/handlers/errorsHandler');
-const RolesService = require('../roles/roles');
-// import Role from '../../../models/v1/users/roles';
 const generateRandomToken = require('../../../helpers/tokens/generateRandomToken');
+const { createRoles, deleteRoles } = require('../roles/roles');
 
 const createUser = async (req, res) => {
   try {
@@ -22,7 +21,7 @@ const createUser = async (req, res) => {
     });
 
     req.body.id = user.id;
-    const userRoles = RolesService.createRoles(req, res);
+    const userRoles = await createRoles(req, res);
 
     const responseUser = {
       id: user.id,
@@ -47,7 +46,6 @@ const getUsers = async (req, res) => {
     const users = await User.findAll({
       include: {
         model: Role,
-        as: 'roles',
         attributes: ['name'],
       },
       attributes: ['id', 'name', 'email', 'createdAt', 'updatedAt'],
@@ -82,9 +80,9 @@ const updateUser = async (req, res) => {
     if (req.body.roles) {
       const newRoles = req.body.roles;
       req.body.roles = user.roles;
-      await RolesService.deleteRoles(req, res);
+      await deleteRoles(req, res);
       req.body.roles = newRoles;
-      await RolesService.createRoles(req, res);
+      await createRoles(req, res);
     }
 
     if (req.body.password) {
@@ -145,7 +143,7 @@ const deleteUser = async (req, res) => {
     user.email = null;
     req.body.roles = user.roles;
     await user.save();
-    await RolesService.deleteRoles(req, res);
+    await deleteRoles(req, res);
     await User.destroy({
       where: { id },
     });
@@ -198,7 +196,7 @@ const resetPassword = async (req, res) => {
     await user.save();
     const resetLink = `http://${req.headers.host}${req.baseUrl}/reset-password/${data.token}`; // FIXME in production mode to https (front route)
 
-    /* 
+    /*
       NOTE SEND EMAIL:
       1. Setup sendgrid - 1h
       2. Create sending method - 10m
@@ -306,7 +304,7 @@ const checkUser = async (userId) => {
     const user = await User.findByPk(userId);
     if (!user) throw new Error(`The user with the ID ${userId} doesn't exist`);
     return true;
-  } catch (error: any) {
+  } catch (error) {
     const regex = /exist/gi;
     if (!regex.test(error.message))
       throw new Error(`Validation error, please try again`);
@@ -314,7 +312,7 @@ const checkUser = async (userId) => {
   }
 };
 
-export default {
+module.exports = {
   createUser,
   getUsers,
   updateUser,

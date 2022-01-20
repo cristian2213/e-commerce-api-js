@@ -1,7 +1,7 @@
 const errorsHandler = require('../../../helpers/handlers/errorsHandler');
-// import Role from '../../../models/v1/users/roles';
+const { Role } = require('../../../config/db/models/index');
 
-const createRoles = async (req: any, res: Response) => {
+const createRoles = async (req, res) => {
   try {
     const { roles } = req.body;
     const userRoles = [];
@@ -19,7 +19,7 @@ const createRoles = async (req: any, res: Response) => {
   }
 };
 
-const deleteRoles = async (req: Request, res: Response) => {
+const deleteRoles = async (req, res) => {
   try {
     const { roles } = req.body;
     for (let i = 0; i < roles.length; i++) {
@@ -34,7 +34,7 @@ const deleteRoles = async (req: Request, res: Response) => {
   }
 };
 
-export default {
+module.exports = {
   createRoles,
   deleteRoles,
 };

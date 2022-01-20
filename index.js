@@ -8,7 +8,7 @@ const { join } = require('path');
 const swaggerUi = require('swagger-ui-express');
 const routerV1 = require('./routes/v1/router');
 const validateSchema = require('./helpers/env/validationSchema.helper');
-const swagger = require('./swagger/swagger.json');
+const swagger = require('./config/swagger/swagger.json');
 
 const app = express();
 const port = process.env.APP_PORT || 3000;
@@ -20,25 +20,11 @@ const bootstrap = async () => {
     await validateSchema();
 
     app.use(express.json());
-    app.use(
-      cors({
-        origin: '*',
-      })
-    );
-
-    app.use(
-      '/storate-images',
-      express.static(join(__dirname, 'storage', 'v1', 'images'))
-    );
+    app.use(cors({ origin: '*' }));
 
     app.use(
       '/storate-docs',
       express.static(join(__dirname, 'storage', 'v1', 'docs'))
-    );
-
-    app.use(
-      '/storate-logs',
-      express.static(join(__dirname, 'storage', 'v1', 'logs'))
     );
 
     app.use('/api/v1', routerV1);
@@ -59,5 +45,3 @@ const bootstrap = async () => {
 };
 
 bootstrap();
-
-module.exports = app;
