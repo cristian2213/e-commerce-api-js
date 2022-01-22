@@ -6,6 +6,13 @@ const errorsHandler = require('../../../helpers/handlers/errorsHandler');
 const generateRandomToken = require('../../../helpers/tokens/generateRandomToken');
 const { createRoles, deleteRoles } = require('../roles/roles');
 
+/**
+ * getUsers(req, res)
+ * @param {Request} req
+ * @param {Response} res
+ * @description Function to get all users from database
+ * @returns [{Object|Object}] [Returns an User object | Json object]
+ */
 const createUser = async (req, res) => {
   try {
     const payload = req.body;
@@ -41,6 +48,13 @@ const createUser = async (req, res) => {
   }
 };
 
+/**
+ * getUsers(req, res)
+ * @param {Request} req
+ * @param {Response} res
+ * @description Function to get all users from database
+ * @returns [{ Object[] }] [Returns an object array of Users]
+ */
 const getUsers = async (req, res) => {
   try {
     const users = await User.findAll({
@@ -57,6 +71,13 @@ const getUsers = async (req, res) => {
   }
 };
 
+/**
+ * updateUser(req, res)
+ * @param {Request} req
+ * @param {Response} res
+ * @description Function to update an user from database
+ * @returns [{Object|Object}] [Returns a Json object | User object]
+ */
 const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
@@ -111,6 +132,13 @@ const updateUser = async (req, res) => {
   }
 };
 
+/**
+ * getUser(req, res)
+ * @param {Request} req
+ * @param {Response} res
+ * @description Function to get an user from database
+ * @returns [{Object}] [Returns a Json object]
+ */
 const getUser = async (req, res) => {
   try {
     const user = await User.findByPk(req.params.id, {
@@ -121,6 +149,7 @@ const getUser = async (req, res) => {
       },
       attributes: ['id', 'name', 'email', 'createdAt', 'updatedAt'],
     });
+
     if (!user)
       return res.status(StatusCodes.NOT_FOUND).json({
         statusCode: StatusCodes.NOT_FOUND,
@@ -132,6 +161,13 @@ const getUser = async (req, res) => {
   }
 };
 
+/**
+ * deleteUser(req, res)
+ * @param {Request} req
+ * @param {Response} res
+ * @description Function to delete an user from database
+ * @returns [{Object}] [Returns a Json object]
+ */
 const deleteUser = async (req, res) => {
   try {
     const id = req.params.id;
@@ -158,6 +194,13 @@ const deleteUser = async (req, res) => {
   }
 };
 
+/**
+ * emailExists(req, res)
+ * @param {Request} req
+ * @param {Response} res
+ * @description Helper function to check if the user email exists
+ * @returns [{Object|boolean}] [Returns an User object | false]
+ */
 const emailExists = async (req, res) => {
   const { id } = req.params || req.body;
   const user = await User.findOne({
@@ -176,46 +219,58 @@ const emailExists = async (req, res) => {
   return user ? true : false;
 };
 
+/**
+ * resetPassword(req, res)
+ * @param {Request} req
+ * @param {Response} res
+ * @description Function to reset password by email
+ * @returns [{Object}] [Returns a Json object]
+ */
 const resetPassword = async (req, res) => {
   try {
-    // receive the token sent to the email
     const { email } = req.body;
     const user = await User.findOne({
       where: {
         email,
+        emailVerifiedAt: {
+          [Op.ne]: null,
+        },
       },
     });
 
     if (!user)
       return res.status(StatusCodes.NOT_FOUND).json({
         statusCode: StatusCodes.NOT_FOUND,
-        message: ReasonPhrases.NOT_FOUND,
+        message: "The account doesn't exist, or It hasn't been confirmed.",
       });
 
     const data = generateRandomToken(); // by default 1h
+
     user.token = data.token;
     user.tokenExpiration = data.expirationDate;
     await user.save();
     const resetLink = `http://${req.headers.host}${req.baseUrl}/reset-password/${data.token}`; // FIXME in production mode to https (front route)
 
-    /*
-      NOTE SEND EMAIL:
-      1. Setup sendgrid - 1h
-      2. Create sending method - 10m
-      3. Create template - 35m
-    */
+    // FIXME TO CALL HERE THE FUNCTION TO SEND EMAIL
 
     return res.status(StatusCodes.OK).json({
       statusCode: StatusCodes.OK,
       message:
         "we've sent a verification link to your email for resetting your password",
-      token: data.token, // FIXME delete it
+      token: data.token, // FIXME delete me, when the front is done
     });
   } catch (error) {
     errorsHandler(req, res, error);
   }
 };
 
+/**
+ * confirmToken(req, res)
+ * @param {Request} req
+ * @param {Response} res
+ * @description Function to confirm the token sent to the mail, If It has a valid token the UI should show the component to change the password
+ * @returns [{Object}] [Returns a Json object]
+ */
 const confirmToken = async (req, res) => {
   try {
     const user = await certifyToken(req, res);
@@ -237,6 +292,13 @@ const confirmToken = async (req, res) => {
   }
 };
 
+/**
+ * updatePassword(req, res)
+ * @param {Request} req
+ * @param {Response} res
+ * @description Function to change the password
+ * @returns [{Object}] [Returns a Json object]
+ */
 const updatePassword = async (req, res) => {
   try {
     const { password } = req.body;
@@ -264,24 +326,34 @@ const updatePassword = async (req, res) => {
   }
 };
 
+/**
+ * certifyToken(req, res)
+ * @param {Request} req
+ * @param {Response} res
+ * @description Helper function to check if the token is active
+ * @returns [{Object|boolean}] [Returns a Json object with the user information | false]
+ */
 const certifyToken = async (req, res) => {
-  try {
-    const { token } = req.params;
-    const user = await User.findOne({
-      where: {
-        token,
-        tokenExpiration: {
-          [Op.gte]: Date.now(), // >=
-        },
+  const { token } = req.params;
+  const user = await User.findOne({
+    where: {
+      token,
+      tokenExpiration: {
+        [Op.gte]: Date.now(), // >=
       },
-    });
+    },
+  });
 
-    return user ? user : false;
-  } catch (error) {
-    errorsHandler(req, res, error);
-  }
+  return user ? user : false;
 };
 
+/**
+ * findByEmail(req, res)
+ * @param {Request} req
+ * @param {Response} res
+ * @description Helper function to check if the user exists
+ * @returns [{Object|null}] [Returns a User object | null]
+ */
 const findByEmail = async (email) => {
   const user = await User.findOne({
     attributes: [
@@ -296,11 +368,17 @@ const findByEmail = async (email) => {
     where: {
       email,
     },
-    paranoid: false,
   });
   return user;
 };
 
+/**
+ * checkUser(req, res)
+ * @param {number} userId
+ * @description Helper function to validate if the user exists by Id
+ * @throws {Error} Returns an error if the user doesn't exist
+ * @returns [{undefined}] [void]
+ */
 const checkUser = async (userId) => {
   try {
     const user = await User.findByPk(userId);

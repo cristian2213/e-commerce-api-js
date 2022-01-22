@@ -61,8 +61,7 @@ const updateUserReq = [
           );
         return true;
       }
-    })
-    ,
+    }),
   (req, res, next) => {
     validationHandler(req, res, next);
   },
@@ -128,11 +127,7 @@ const updatePasswordReq = [
     .withMessage('The password field is required')
     .bail()
     /* 
-    minLength: 8,
-    minLowercase: 1,
-    minUppercase: 1,
-    minNumbers: 1,
-    minSymbols: 1,
+    minLength: 8, minLowercase: 1, minUppercase: 1, minNumbers: 1, minSymbols: 1,
   */
     .isStrongPassword()
     .withMessage(

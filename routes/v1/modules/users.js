@@ -10,6 +10,7 @@ const {
   deleteUser,
   resetPassword,
   confirmToken,
+  updatePassword,
 } = require('../../../services/v1/users/users');
 const {
   getUserReq,
@@ -36,6 +37,6 @@ router.post('/reset-password', resetPasswordReq, resetPassword);
 
 router.get('/reset-password/:token', confirmTokenReq, confirmToken);
 
-router.post('/reset-password/:token', updatePasswordReq, updateUser);
+router.post('/reset-password/:token', updatePasswordReq, updatePassword);
 
 module.exports = router;
