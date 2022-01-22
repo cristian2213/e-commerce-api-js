@@ -11,7 +11,9 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // 1:N
-      User.hasMany(models.Role); // NOTE ALWAYS ADD THE FK IN THE TABLE THAT CONTAINS IT
+      User.hasMany(models.Role, {
+        as: 'roles'
+      }); // NOTE ALWAYS ADD THE FK IN THE TABLE THAT CONTAINS IT
     }
   }
   User.init(
@@ -27,6 +29,7 @@ module.exports = (sequelize, DataTypes) => {
       },
       email: {
         type: DataTypes.STRING,
+        unique: true,
         validate: {
           isEmail: {
             msg: 'Please, add a valid email',

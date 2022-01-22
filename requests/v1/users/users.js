@@ -1,24 +1,23 @@
-import { Request, Response, NextFunction } from 'express';
-import validationHandler from '../../../helpers/v1/handlers/validationHandler';
-import { body, param } from 'express-validator';
-import { signUpReq } from '../auth/authRequests';
-import { Roles } from '../../../helpers/v1/roles/roles';
+const { body, param } = require('express-validator');
+const validationHandler = require('../../../helpers/handlers/validationHandler');
+const { signUpReq } = require('../auth/authRequests');
+const { RolesValues, Roles } = require('../../../helpers/roles/roles');
 
-export const createUserReq = signUpReq;
+const createUserReq = signUpReq;
 
-export const getUserReq = [
+const getUserReq = [
   param('id')
     .exists()
     .withMessage('The id param is required')
     .bail()
     .toInt()
     .withMessage('The id param is invalid'),
-  (req: Request, res: Response, next: NextFunction) => {
+  (req, res, next) => {
     validationHandler(req, res, next);
   },
 ];
 
-export const updateUserReq = [
+const updateUserReq = [
   param('id')
     .exists()
     .withMessage('The id param is required')
@@ -54,27 +53,34 @@ export const updateUserReq = [
     .isArray()
     .withMessage('The role field must be an array')
     .bail()
-    .isIn(Object.values(Roles))
-    .withMessage(`Only allowed ${Object.values(Roles).join(', ')}`)
-    .bail(),
-  (req: Request, res: Response, next: NextFunction) => {
+    .custom((roles) => {
+      for (const role of roles) {
+        if (!RolesValues.includes(role))
+          throw new Error(
+            `Role didn't allow, Only allowed ${RolesValues.join(', ')}`
+          );
+        return true;
+      }
+    })
+    ,
+  (req, res, next) => {
     validationHandler(req, res, next);
   },
 ];
 
-export const deleteUserReq = [
+const deleteUserReq = [
   param('id')
     .exists()
     .withMessage('The id param is required')
     .bail()
     .toInt()
     .withMessage('The id param is invalid'),
-  (req: Request, res: Response, next: NextFunction) => {
+  (req, res, next) => {
     validationHandler(req, res, next);
   },
 ];
 
-export const resetPasswordReq = [
+const resetPasswordReq = [
   body('email')
     .exists()
     .withMessage('The email field is required')
@@ -84,12 +90,12 @@ export const resetPasswordReq = [
     .bail()
     .trim()
     .escape(),
-  (req: Request, res: Response, next: NextFunction) => {
+  (req, res, next) => {
     validationHandler(req, res, next);
   },
 ];
 
-export const confirmToken = [
+const confirmTokenReq = [
   param('token')
     .exists()
     .withMessage('The token field is required')
@@ -100,12 +106,12 @@ export const confirmToken = [
     .isLength({ min: 44, max: 44 })
     .withMessage('The token length is invalid')
     .trim(),
-  (req: Request, res: Response, next: NextFunction) => {
+  (req, res, next) => {
     validationHandler(req, res, next);
   },
 ];
 
-export const updatePassword = [
+const updatePasswordReq = [
   param('token')
     .exists()
     .withMessage('The token field is required')
@@ -148,7 +154,17 @@ export const updatePassword = [
     .bail()
     .trim()
     .escape(),
-  (req: Request, res: Response, next: NextFunction) => {
+  (req, res, next) => {
     validationHandler(req, res, next);
   },
 ];
+
+module.exports = {
+  createUserReq,
+  getUserReq,
+  updateUserReq,
+  deleteUserReq,
+  resetPasswordReq,
+  confirmTokenReq,
+  updatePasswordReq,
+};

@@ -1,5 +1,6 @@
 'use strict';
 const { Model } = require('sequelize');
+const { RolesValues } = require('../../../helpers/roles/roles');
 module.exports = (sequelize, DataTypes) => {
   class Role extends Model {
     /**
@@ -11,6 +12,7 @@ module.exports = (sequelize, DataTypes) => {
       // N:1
       Role.belongsTo(models.User, {
         foreignKey: 'userId',
+        as: 'user',
       });
     }
   }
@@ -22,6 +24,12 @@ module.exports = (sequelize, DataTypes) => {
           len: {
             msg: [4, 255],
             msg: 'Allowed name length 2 to 255 characters',
+          },
+          hasRoles(name) {
+            if (!RolesValues.includes(name))
+              throw new Error(
+                `Role didn't allow, Only allowed ${RolesValues.join(', ')}`
+              );
           },
         },
       },

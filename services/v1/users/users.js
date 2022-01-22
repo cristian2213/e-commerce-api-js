@@ -46,6 +46,7 @@ const getUsers = async (req, res) => {
     const users = await User.findAll({
       include: {
         model: Role,
+        as: 'roles',
         attributes: ['name'],
       },
       attributes: ['id', 'name', 'email', 'createdAt', 'updatedAt'],
@@ -75,7 +76,14 @@ const updateUser = async (req, res) => {
         status: ReasonPhrases.NOT_FOUND,
       });
 
-    if (req.body.email) await emailExists(req, res);
+    if (req.body.email) {
+      const result = await emailExists(req, res);
+      if (result === true)
+        return res.status(StatusCodes.BAD_REQUEST).json({
+          statusCode: StatusCodes.BAD_REQUEST,
+          message: 'The email exists already',
+        });
+    }
 
     if (req.body.roles) {
       const newRoles = req.body.roles;
@@ -140,14 +148,10 @@ const deleteUser = async (req, res) => {
         statusCode: StatusCodes.NOT_FOUND,
         status: ReasonPhrases.NOT_FOUND,
       });
-    user.email = null;
-    req.body.roles = user.roles;
-    await user.save();
-    await deleteRoles(req, res);
+
     await User.destroy({
       where: { id },
     });
-
     return res.status(StatusCodes.OK).json(user);
   } catch (error) {
     errorsHandler(req, res, error);
@@ -155,23 +159,21 @@ const deleteUser = async (req, res) => {
 };
 
 const emailExists = async (req, res) => {
-  try {
-    const user = await User.findOne({
-      attributes: ['id', 'email'],
-      where: {
-        email: req.body.email || req.user.email,
-      },
-    });
-    if (user) {
-      if (user.email !== (req.body.email || req.user.email))
-        return res.status(StatusCodes.BAD_REQUEST).json({
-          statusCode: StatusCodes.BAD_REQUEST,
-          message: 'The emai exists already',
-        });
-    }
-  } catch (error) {
-    errorsHandler(req, res, error);
-  }
+  const { id } = req.params || req.body;
+  const user = await User.findOne({
+    attributes: ['id', 'email'],
+    where: {
+      [Op.and]: [
+        { email: req.body.email || req.user.email },
+        {
+          id: {
+            [Op.ne]: id,
+          },
+        },
+      ],
+    },
+  });
+  return user ? true : false;
 };
 
 const resetPassword = async (req, res) => {

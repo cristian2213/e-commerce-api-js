@@ -5,7 +5,7 @@ const errorsHandler = (_req, res, error, msg) => {
   const errorCode = StatusCodes.INTERNAL_SERVER_ERROR;
   return res.status(errorCode).json({
     statusCode: errorCode,
-    message: msg ? msg : ReasonPhrases.INTERNAL_SERVER_ERROR,
+    message: msg ? msg : error.message,
   });
 };
 

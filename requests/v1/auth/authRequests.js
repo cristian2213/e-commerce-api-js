@@ -1,10 +1,10 @@
 const { Roles } = require('../../../helpers/roles/roles');
 const { body } = require('express-validator');
-const UserService = require('../../../services/v1/users/users');
+const { findByEmail } = require('../../../services/v1/users/users');
 
 const validationHandler = require('../../../helpers/handlers/validationHandler');
 
-export const signUpReq = [
+const signUpReq = [
   body('name')
     .exists()
     .withMessage('The email field is required')
@@ -19,12 +19,12 @@ export const signUpReq = [
     .isEmail()
     .withMessage('The email field is invalid')
     .bail()
-    .custom(async (email: string) => {
+    .custom(async (email) => {
       try {
-        const user = await UserService.findByEmail(email);
+        const user = await findByEmail(email);
         if (user) throw new Error('The email exists already');
         return true;
-      } catch (err: any) {
+      } catch (err) {
         throw new Error(err.message);
       }
     })
@@ -82,7 +82,7 @@ export const signUpReq = [
     .isURL()
     .withMessage('The accountConfirmationPath field must be an URL')
     .bail()
-    .custom((value: string, { req }) => {
+    .custom((value, { req }) => {
       if (value.endsWith('/')) {
         req.body.accountConfirmationPath = value.substring(0, value.length - 1);
       }
@@ -96,7 +96,7 @@ export const signUpReq = [
   },
 ];
 
-export const loginReq = [
+const loginReq = [
   body('email')
     .exists()
     .withMessage('The email field is required')
@@ -116,3 +116,8 @@ export const loginReq = [
     validationHandler(req, res, next);
   },
 ];
+
+module.exports = {
+  signUpReq,
+  loginReq,
+};
