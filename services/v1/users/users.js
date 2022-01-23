@@ -10,6 +10,7 @@ const { createRoles, deleteRoles } = require('../roles/roles');
  * getUsers(req, res)
  * @param {Request} req
  * @param {Response} res
+ * @param {Object} req.user - The payload of the token
  * @description Function to get all users from database
  * @returns [{Object|Object}] [Returns an User object | Json object]
  */
@@ -52,6 +53,7 @@ const createUser = async (req, res) => {
  * getUsers(req, res)
  * @param {Request} req
  * @param {Response} res
+ * @param {Object} req.user - The payload of the token
  * @description Function to get all users from database
  * @returns [{ Object[] }] [Returns an object array of Users]
  */
@@ -75,6 +77,7 @@ const getUsers = async (req, res) => {
  * updateUser(req, res)
  * @param {Request} req
  * @param {Response} res
+ * @param {Object} req.user - The payload of the token
  * @description Function to update an user from database
  * @returns [{Object|Object}] [Returns a Json object | User object]
  */
@@ -136,6 +139,7 @@ const updateUser = async (req, res) => {
  * getUser(req, res)
  * @param {Request} req
  * @param {Response} res
+ * @param {Object} req.user - The payload of the token
  * @description Function to get an user from database
  * @returns [{Object}] [Returns a Json object]
  */
@@ -165,6 +169,7 @@ const getUser = async (req, res) => {
  * deleteUser(req, res)
  * @param {Request} req
  * @param {Response} res
+ * @param {Object} req.user - The payload of the token
  * @description Function to delete an user from database
  * @returns [{Object}] [Returns a Json object]
  */
@@ -331,7 +336,7 @@ const updatePassword = async (req, res) => {
  * @param {Request} req
  * @param {Response} res
  * @description Helper function to check if the token is active
- * @returns [{Object|boolean}] [Returns a Json object with the user information | false]
+ * @returns [{Object|boolean}] [Returns an User object | false]
  */
 const certifyToken = async (req, res) => {
   const { token } = req.params;
@@ -376,7 +381,7 @@ const findByEmail = async (email) => {
  * checkUser(req, res)
  * @param {number} userId
  * @description Helper function to validate if the user exists by Id
- * @throws {Error} Returns an error if the user doesn't exist
+ * @throws {Error} Throw an error if the user doesn't exist
  * @returns [{undefined}] [void]
  */
 const checkUser = async (userId) => {

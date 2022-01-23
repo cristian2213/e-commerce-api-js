@@ -96,7 +96,7 @@ const signUpReq = [
   },
 ];
 
-const loginReq = [
+const signInReq = [
   body('email')
     .exists()
     .withMessage('The email field is required')
@@ -119,5 +119,5 @@ const loginReq = [
 
 module.exports = {
   signUpReq,
-  loginReq,
+  signInReq,
 };

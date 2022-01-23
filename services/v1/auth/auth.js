@@ -1,28 +1,33 @@
-import { Request, Response, NextFunction } from 'express';
-import JWT from 'jsonwebtoken';
-import { verify } from 'argon2';
-import { StatusCodes, ReasonPhrases } from 'http-status-codes';
-import envConfig from '../../../config/v1/env/env.config';
-import config from '../../../config';
-import { PayloadToken } from '../../../types/v1/jwt/jwt.type';
-import UsersService from '../users/users';
-import { errorsHandler } from '../../../helpers/v1/handlers/errorsHandler';
-import ShippingHandler from '../emails/sendEmails';
+const JWT = require('jsonwebtoken');
+const { verify } = require('argon2');
+const { StatusCodes, ReasonPhrases } = require('http-status-codes');
+const { createUser, certifyToken, findByEmail } = require('../users/users');
+const errorsHandler = require('../../../helpers/handlers/errorsHandler');
+const { sendEmail } = require('../emails/sendEmails');
+const config = require('../../../config');
+const {
+  jwt: { secret },
+} = config();
 
-envConfig();
-
-const signUp = async (req: Request, res: Response, next: NextFunction) => {
+/**
+ * signUp(req, res)
+ * @param {Request} req
+ * @param {Response} res
+ * @description Function to sign up through email
+ * @returns [{Object}] [Returns a Json object with the verify link]
+ */
+const signUp = async (req, res) => {
   try {
     const { accountConfirmationPath } = req.body;
     req.body.signUp = true;
-    const user: any = await UsersService.createUser(req, res);
+    const user = await createUser(req, res);
 
     const confirmationURL = `${accountConfirmationPath}/${user.token}`;
 
-    await ShippingHandler.sendEmail({
+    await sendEmail({
       to: user.email,
       subject: 'Confirm Account 🔐',
-      file: 'confirmAccount.pug',
+      file: 'index.html',
       htmlOptions: {
         userName: user.name,
         confirmationURL,
@@ -36,15 +41,22 @@ const signUp = async (req: Request, res: Response, next: NextFunction) => {
       message: "We've seen a confirmation email to your account",
       confirmationURL,
     });
-  } catch (error: any) {
-    errorsHandler(req, res, error, error.message);
+  } catch (error) {
+    errorsHandler(req, res, error);
   }
 };
 
-const login = async (req: Request, res: Response, next: NextFunction) => {
+/**
+ * signIn(req, res)
+ * @param {Request} req
+ * @param {Response} res
+ * @description Function to sign in through an email and password
+ * @returns [{Object|Object}] [Returns a Json object with validation errors | Returns a Json object with an User object and the token]
+ */
+const signIn = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user: any = await UsersService.findByEmail(email);
+    const user = await findByEmail(email);
     if (!user)
       return res.status(StatusCodes.NOT_ACCEPTABLE).json({
         statusCode: StatusCodes.NOT_FOUND,
@@ -64,7 +76,7 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
         message: 'Passwords does not match',
       });
 
-    const payload: PayloadToken = {
+    const payload = {
       sub: user.id,
       roles: user.roles,
       email: user.email,
@@ -81,14 +93,21 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
       },
       token,
     });
-  } catch (error: any) {
+  } catch (error) {
     errorsHandler(req, res, error, error.message);
   }
 };
 
-const confirmAccount = async (req: Request, res: Response) => {
+/**
+ * confirmAccount(req, res)
+ * @param {Request} req
+ * @param {Response} res
+ * @description Function to confirm the user account through the email sent previously to the user email
+ * @returns [{Object|Object}] [Returns a Json object with validation errors | Returns a Json object with a success message ]
+ */
+const confirmAccount = async (req, res) => {
   try {
-    const user: any = await UsersService.certifyToken(req, res);
+    const user = await certifyToken(req, res);
 
     if (user === false) {
       return res.status(StatusCodes.FORBIDDEN).json({
@@ -114,17 +133,27 @@ const confirmAccount = async (req: Request, res: Response) => {
   }
 };
 
-const generateJWT = (payload: PayloadToken, ttl = '1h'): string => {
-  const token: string = JWT.sign(payload, config()['jwt'].secret as string, {
+/**
+ * generateJWT(payload, ttl = '1h')
+ * @param {Object} payload - Data to fill the token
+ * @param {string|null} ttl - Token lifetime, by default (1h)
+ * @returns [{string}] [Returns the token]
+ */
+const generateJWT = (payload, ttl = '1h') => {
+  const token = JWT.sign(payload, secret, {
     expiresIn: ttl,
   });
   return token;
 };
 
-const comparePasswords = async (
-  hash: string,
-  password: string
-): Promise<boolean | never> => {
+/**
+ * comparePasswords(has, password)
+ * @param {string} hash - Password encryted previously
+ * @param {string} password - User password in raw
+ * @throws {Error} - Throw an error if the password doesn't match
+ * @returns [{boolean}] [Returns true if the password matches or false otherwise.]
+ */
+const comparePasswords = async (hash, password) => {
   try {
     if (!hash || !password)
       throw new Error('The hash and password parameters are required');
@@ -133,9 +162,15 @@ const comparePasswords = async (
     if (!comparison) throw new Error('The passwords are not the same');
 
     return comparison;
-  } catch (error: any) {
+  } catch (error) {
     throw new Error(error.message);
   }
 };
 
-export default { signUp, login, generateJWT, comparePasswords, confirmAccount };
+module.exports = {
+  signUp,
+  signIn,
+  generateJWT,
+  comparePasswords,
+  confirmAccount,
+};
