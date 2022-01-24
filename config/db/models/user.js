@@ -10,10 +10,18 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      // 1:N
+      // ******** 1:N ********
       User.hasMany(models.Role, {
-        as: 'roles'
-      }); // NOTE ALWAYS ADD THE FK IN THE TABLE THAT CONTAINS IT
+        // The foreing key should be provided here, on the contrary the model with the fk will returns two FKs
+        foreignKey: 'id',
+        as: 'roles',
+      });
+      // The foreing key must be provided in the table with the relationship N
+      User.hasMany(models.Product, {
+        foreignKey: 'id',
+        as: 'products',
+      });
+      // *********************
     }
   }
   User.init(

@@ -1,17 +1,14 @@
-import { errorsHandler } from './../../../helpers/v1/handlers/errorsHandler';
-import { Request, Response } from 'express';
-import { StatusCodes, ReasonPhrases } from 'http-status-codes';
-import Product from '../../../models/v1/products/product';
-import { Op } from 'sequelize';
-import { generateSlug } from '../../../helpers/v1/products/generateSlug';
-import Tag from '../../../models/v1/tags/tag';
-import ProductsTags from '../../../models/v1/tags/productsTags';
+const { Op } = require('sequelize');
+const { StatusCodes, ReasonPhrases } = require('http-status-codes');
+const errorsHandler = require('../../../helpers/handlers/errorsHandler');
+const { Product } = require('../../../config/db/models/index');
+const generateSlug = require('../../../helpers/products/generateSlug');
 
-const createProduct = async (req: Request, res: Response) => {
+const createProduct = async (req, res) => {
   try {
     const { userId } = req.body;
-    let position: number = 1;
-    const lastPosition: number = await Product.max('position', {
+    let position = 1;
+    const lastPosition = await Product.max('position', {
       where: {
         userId,
       },
@@ -22,20 +19,25 @@ const createProduct = async (req: Request, res: Response) => {
     req.body.position = position;
     req.body.slug = generateSlug(req.body.slug);
 
-    const product = await Product.create({
-      ...req.body,
-    });
+    const product = await Product.create(
+      {
+        ...req.body,
+      },
+      {}
+    );
+    await product.reload();
     return res.status(StatusCodes.CREATED).json(product);
   } catch (error) {
     errorsHandler(req, res, error);
   }
 };
-const getProducts = async (req: Request, res: Response) => {
+
+const getProducts = async (req, res) => {
   try {
     let { limit, offset } = req.query;
     const { userId } = req.body;
-    const limitByDefault: number = 10;
-    const offsetByDefault: number = 0;
+    const limitByDefault = 10;
+    const offsetByDefault = 0;
 
     const where = {
       userId,
@@ -59,12 +61,13 @@ const getProducts = async (req: Request, res: Response) => {
     errorsHandler(req, res, error);
   }
 };
-const getProduct = async (req: Request, res: Response) => {
+
+const getProduct = async (req, res) => {
   try {
     const { slug } = req.params;
     const { userId } = req.body;
     const product = await Product.findOne({
-      include: Tag,
+      // include: Tag,
       where: {
         slug,
         userId,
@@ -81,11 +84,12 @@ const getProduct = async (req: Request, res: Response) => {
     errorsHandler(req, res, error);
   }
 };
-const updateProduct = async (req: Request, res: Response) => {
+
+const updateProduct = async (req, res) => {
   try {
     const { slug } = req.params;
-    const { userId, likes } = req.body;
-    const product: any = await Product.findOne({ where: { slug, userId } });
+    const { userId, likes, slug: newSLug } = req.body;
+    const product = await Product.findOne({ where: { slug, userId } });
     if (!product)
       return res.status(StatusCodes.NOT_FOUND).json({
         statusCode: StatusCodes.NOT_FOUND,
@@ -93,19 +97,22 @@ const updateProduct = async (req: Request, res: Response) => {
       });
     if (likes) req.body.likes += product.likes;
 
+    if (newSLug) req.body.slug = generateSlug(newSLug);
+
     const updatedProduct = await product.update(req.body);
+    await updatedProduct.reload();
     return res.status(StatusCodes.OK).json(updatedProduct);
   } catch (error) {
     errorsHandler(req, res, error);
   }
 };
 
-const updateProductPosition = async (req: Request, res: Response) => {
+const updateProductPosition = async (req, res) => {
   try {
     const { id } = req.params;
     const { userId } = req.body;
 
-    const product: any = await Product.findOne({ where: { id, userId } });
+    const product = await Product.findOne({ where: { id, userId } });
     if (!product)
       return res.status(StatusCodes.NOT_FOUND).json({
         statusCode: StatusCodes.NOT_FOUND,
@@ -115,7 +122,7 @@ const updateProductPosition = async (req: Request, res: Response) => {
     req.body.product = product;
     const newPosition = req.body.position;
     const currentPosition = product.position;
-    let msg: string = 'Position successfully updated';
+    let msg = 'Position successfully updated';
 
     switch (true) {
       // Permutation #1
@@ -148,15 +155,10 @@ const updateProductPosition = async (req: Request, res: Response) => {
 * [nodo1, nodo2, nodo3, nodo4, nodo5] => 1 to 5 = [nodo2, nodo3, nodo4, nodo5, nodo1]
                                                     1       2      3      4      5
 */
-const updateRightPosition = async (
-  req: Request,
-  res: Response,
-  newPosition: number,
-  currentPosition: number
-) => {
+const updateRightPosition = async (req, res, newPosition, currentPosition) => {
   try {
     const { userId, product } = req.body;
-    const maxPosition: number = await Product.max('position', {
+    const maxPosition = await Product.max('position', {
       where: {
         userId,
       },
@@ -167,9 +169,9 @@ const updateRightPosition = async (
       return;
     }
 
-    const totalToUpdate: number = newPosition - currentPosition + 1;
+    const totalToUpdate = newPosition - currentPosition + 1;
     if (newPosition <= maxPosition) {
-      const productsToUpdate: any[] = await Product.findAll({
+      const productsToUpdate = await Product.findAll({
         where: {
           userId,
           position: {
@@ -200,18 +202,13 @@ const updateRightPosition = async (
  *[nodo1, nodo2, nodo3, nodo4, nodo5] => 5 to 1 = [nodo5, nodo1, nodo2, nodo3, nodo4]
                                                     1       2      3      4      5
  */
-const updateLeftPosition = async (
-  req: Request,
-  res: Response,
-  newPosition: number,
-  currentPosition: number
-) => {
+const updateLeftPosition = async (req, res, newPosition, currentPosition) => {
   try {
     const { userId, product } = req.body;
     // 5 to 1
     const totalToUpdate = currentPosition - newPosition + 1; // (a > b | a - b = +c)
 
-    const productsToUpdate: any[] = await Product.findAll({
+    const productsToUpdate = await Product.findAll({
       where: {
         userId,
         position: {
@@ -238,10 +235,11 @@ const updateLeftPosition = async (
   }
 };
 
-const deleteProduct = async (req: Request, res: Response) => {
+const deleteProduct = async (req, res) => {
   try {
     const { slug } = req.params;
-    let product: any = await Product.findOne({ where: { slug } });
+    const { userId } = req.body; 
+    let product = await Product.findOne({ where: { slug, userId } });
     if (!product)
       return res.status(StatusCodes.NOT_FOUND).json({
         statusCode: StatusCodes.NOT_FOUND,
@@ -255,7 +253,7 @@ const deleteProduct = async (req: Request, res: Response) => {
   }
 };
 
-export default {
+module.exports = {
   createProduct,
   getProducts,
   getProduct,

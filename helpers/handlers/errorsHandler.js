@@ -1,4 +1,4 @@
-const { StatusCodes, ReasonPhrases } = require('http-status-codes');
+const { StatusCodes } = require('http-status-codes');
 
 const errorsHandler = (_req, res, error, msg) => {
   console.log(error);

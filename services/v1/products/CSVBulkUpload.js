@@ -1,23 +1,21 @@
-import { Request, Response } from 'express';
-import csv from 'csv-parser';
-import validator from 'validator';
-import { createReadStream } from 'fs';
-import { StatusCodes, ReasonPhrases } from 'http-status-codes';
-import db from '../../../config/v1/db/databae.config';
-import { CSVFileProductsBulkUpload } from '../../../types/v1/products/CSVFileBulkUpload';
-import Product from '../../../models/v1/products/product';
-import productsValidationSchema from '../../../helpers/v1/products/productsValidationSchema';
-import ProductsBulkUploadService from './productsBulkUpload';
-import fieldsForCreatingProduct from '../../../helpers/v1/products/fieldsForCreatingProduct';
-import ProductsLogService from '../logs/productsLogs/bulkUploadLog';
+const csv = require('csv-parser');
+const validator = require('validator');
+const { createReadStream } = require('fs');
+const { StatusCodes, ReasonPhrases } = require('http-status-codes');
+const db = require('../../../config/db/models/index');
+const {Product} = require('../../../config/db/models/index');
+const productsValidationSchema = require('../../../helpers/products/productsValidationSchema');
+const {checkFile} = require('./productsBulkUpload');
+const fieldsForCreatingProduct = require('../../../helpers/products/fieldsForCreatingProduct');
+// const ProductsLogService = require('../logs/productsLogs/bulkUploadLog');
 
 // STEP 01
-const validateCSVFile = (req: Request, res: Response) => {
-  const file = req.file as Express.Multer.File;
+const validateCSVFile = (req, res) => {
+  const file = req.file;
   req.body.filePath = file.path;
   try {
-    ProductsBulkUploadService.checkFile(req, res);
-  } catch (error: any) {
+    checkFile(req, res);
+  } catch (error) {
     return res.status(StatusCodes.NOT_FOUND).json({
       statusCode: ReasonPhrases.NOT_FOUND,
       onmessage: error.message,
@@ -63,12 +61,12 @@ const validateCSVFile = (req: Request, res: Response) => {
 };
 
 // STEP 02
-const readCSVFile = (req: Request, res: Response) => {
+const readCSVFile = (req, res) => {
   const { filePath } = req.body;
 
   try {
     ProductsBulkUploadService.checkFile(req, res);
-  } catch (error: any) {
+  } catch (error) {
     return res.status(StatusCodes.NOT_FOUND).json({
       statusCode: ReasonPhrases.NOT_FOUND,
       message: error.message,
@@ -114,7 +112,7 @@ const readCSVFile = (req: Request, res: Response) => {
 };
 
 // STEP 03
-const CSVFileProductsValidate = async (req: Request, res: Response) => {
+const CSVFileProductsValidate = async (req, res) => {
   const { products, productData: matchColumns, userId } = req.body;
 
   let position: number = 1;
@@ -149,7 +147,7 @@ const CSVFileProductsValidate = async (req: Request, res: Response) => {
 
       successfulUploads.push(product);
       position++;
-    } catch (error: any) {
+    } catch (error) {
       const {
         message,
         path,
@@ -170,7 +168,7 @@ const CSVFileProductsValidate = async (req: Request, res: Response) => {
 };
 
 // STEP 04
-const ProductsUpload = async (req: Request, res: Response) => {
+const ProductsUpload = async (req, res) => {
   const { failedUploads, successfulUploads } = req.body.validation;
 
   const message =
@@ -185,7 +183,7 @@ const ProductsUpload = async (req: Request, res: Response) => {
     return res.status(StatusCodes.BAD_REQUEST).json({ ...resMsg });
   }
 
-  let transaction: any;
+  let transaction;
   let successfulTransation = true;
   try {
     transaction = await db.transaction();

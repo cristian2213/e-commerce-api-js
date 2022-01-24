@@ -1,4 +1,4 @@
-const { Roles, RolesValues } = require('./../../../helpers/v1/roles/roles');
+const { Roles, RolesValues } = require('./../../../helpers/roles/roles');
 const { StatusCodes } = require('http-status-codes');
 
 const isCustomer = (req, res, next) => {

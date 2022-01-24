@@ -1,9 +1,8 @@
-import { Request, Response, NextFunction } from 'express';
-import { body, param } from 'express-validator';
-import validationHandler from '../../../helpers/v1/handlers/validationHandler';
-import UsersService from '../../../services/v1/users/users';
+const { body, param } = require('express-validator');
+const validationHandler = require('../../../helpers/handlers/validationHandler');
+const { checkUser } = require('../../../services/v1/users/users');
 
-export const createProductReq = [
+const createProductReq = [
   body('name')
     .exists()
     .withMessage('The name field is required')
@@ -59,17 +58,19 @@ export const createProductReq = [
     .isString()
     .withMessage('The slug field must be a string')
     .bail()
+    .isLength([{ min: 5, max: 255 }])
+    .withMessage('The length of the slug must be 5 to 255 characters')
+    .bail()
     .escape()
     .trim()
     .toLowerCase(),
 
   body('stock')
-    .exists()
-    .withMessage('The stock field is required')
-    .bail()
+    .optional({ nullable: true })
     .isInt({ min: 1 })
     .withMessage('The stock field must be a positive number')
     .bail()
+    .escape()
     .toInt(),
 
   body('likes')
@@ -87,15 +88,15 @@ export const createProductReq = [
     .withMessage('The userId field must be a number')
     .bail()
     .custom(async (userId) => {
-      return UsersService.checkUser(userId);
+      return checkUser(userId);
     }),
 
-  (req: Request, res: Response, next: NextFunction) => {
+  (req, res, next) => {
     validationHandler(req, res, next);
   },
 ];
 
-export const updateProductReq = [
+const updateProductReq = [
   body('name')
     .optional({ nullable: true })
     .isString()
@@ -141,6 +142,9 @@ export const updateProductReq = [
     .isString()
     .withMessage('The slug field must be a string')
     .bail()
+    .isLength([{ min: 5, max: 255 }])
+    .withMessage('The length of the slug must be 5 to 255 characters')
+    .bail()
     .escape()
     .trim()
     .toLowerCase(),
@@ -154,7 +158,7 @@ export const updateProductReq = [
 
   body('likes')
     .optional({ nullable: true })
-    .isInt({ min: 0 })
+    .isInt({ min: 1 })
     .withMessage('The likes field must be a positive number')
     .bail()
     .toInt(),
@@ -167,15 +171,15 @@ export const updateProductReq = [
     .withMessage('The userId field must be a number')
     .bail()
     .custom(async (userId) => {
-      return UsersService.checkUser(userId);
+      return checkUser(userId);
     }),
 
-  (req: Request, res: Response, next: NextFunction) => {
+  (req, res, next) => {
     validationHandler(req, res, next);
   },
 ];
 
-export const getProductReq = [
+const getProductReq = [
   param('slug')
     .isSlug()
     .withMessage('The slug param is invalid')
@@ -191,15 +195,15 @@ export const getProductReq = [
     .withMessage('The userId field must be a number')
     .bail()
     .custom((userId) => {
-      return UsersService.checkUser(userId);
+      return checkUser(userId);
     }),
 
-  (req: Request, res: Response, next: NextFunction) => {
+  (req, res, next) => {
     validationHandler(req, res, next);
   },
 ];
 
-export const getProductsReq = [
+const getProductsReq = [
   body('userId')
     .exists()
     .withMessage('The userId field is required')
@@ -208,15 +212,15 @@ export const getProductsReq = [
     .withMessage('The userId field must be a number')
     .bail()
     .custom((userId) => {
-      return UsersService.checkUser(userId);
+      return checkUser(userId);
     }),
 
-  (req: Request, res: Response, next: NextFunction) => {
+  (req, res, next) => {
     validationHandler(req, res, next);
   },
 ];
 
-export const bulkUploadReq = [
+const bulkUploadReq = [
   body('productData')
     .exists()
     .withMessage('The productData field is required')
@@ -283,10 +287,18 @@ export const bulkUploadReq = [
     .withMessage('The userId field must be a number')
     .bail()
     .custom((userId) => {
-      return UsersService.checkUser(userId);
+      return checkUser(userId);
     }),
 
-  (req: Request, res: Response, next: NextFunction) => {
+  (req, res, next) => {
     validationHandler(req, res, next);
   },
 ];
+
+module.exports = {
+  createProductReq,
+  updateProductReq,
+  getProductReq,
+  getProductsReq,
+  bulkUploadReq,
+};

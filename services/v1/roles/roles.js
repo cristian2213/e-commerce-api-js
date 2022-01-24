@@ -1,4 +1,15 @@
 const { Role } = require('../../../config/db/models/index');
+const errorsHandler = require('../../../helpers/handlers/errorsHandler');
+const { StatusCodes } = require('http-status-codes');
+
+const getRoles = async (req, res) => {
+  try {
+    const roles = await Role.findAll();
+    return res.status(StatusCodes.OK).json(roles);
+  } catch (error) {
+    errorsHandler(req, res, error);
+  }
+};
 
 const createRoles = async (req, res) => {
   const { roles } = req.body;
@@ -28,4 +39,5 @@ const deleteRoles = async (req, res) => {
 module.exports = {
   createRoles,
   deleteRoles,
+  getRoles,
 };

@@ -1,13 +1,12 @@
-import { Request, Response } from 'express';
-import { existsSync } from 'fs';
-import { StatusCodes } from 'http-status-codes';
-import { errorsHandler } from '../../../helpers/v1/handlers/errorsHandler';
-import UploadTypes from '../../../helpers/v1/products/productsUploadTypes';
-import CSVBulkUpload from './CSVBulkUpload';
-import XLSXBulkUpload from './XLSXBulkUpload';
+const { existsSync } = require('fs');
+const { StatusCodes } = require('http-status-codes');
+const { errorsHandler } = require('../../../helpers/handlers/errorsHandler');
+const UploadTypes = require('../../../helpers/products/productsUploadTypes');
+const CSVBulkUpload = require('./CSVBulkUpload');
+const XLSXBulkUpload = require('./XLSXBulkUpload');
 
 // STEP 01
-const productsBulkUploadValidation = async (req: Request, res: Response) => {
+const productsBulkUploadValidation = async (req, res) => {
   const { file } = req;
   if (!file)
     return res.status(StatusCodes.BAD_REQUEST).json({
@@ -28,13 +27,13 @@ const productsBulkUploadValidation = async (req: Request, res: Response) => {
       case uploadingType === UploadTypes.TXTFILE:
         break;
     }
-  } catch (error: any) {
+  } catch (error) {
     errorsHandler(req, res, error, error.message);
   }
 };
 
 // STEP 02
-const productsBulkUpload = (req: Request, res: Response) => {
+const productsBulkUpload = (req, res) => {
   try {
     const { uploadingType } = req.body;
     switch (true) {
@@ -54,14 +53,14 @@ const productsBulkUpload = (req: Request, res: Response) => {
   }
 };
 
-const checkFile = (req: Request, res: Response) => {
+const checkFile = (req, res) => {
   const { filePath } = req.body;
   const file = existsSync(filePath);
   if (!file) throw new Error("File doesn't exist");
   return true;
 };
 
-export default {
+module.exports = {
   productsBulkUploadValidation,
   productsBulkUpload,
   checkFile,
