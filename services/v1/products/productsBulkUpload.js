@@ -1,9 +1,9 @@
 const { existsSync } = require('fs');
-const { StatusCodes } = require('http-status-codes');
+const { StatusCodes, ReasonPhrases } = require('http-status-codes');
 const { errorsHandler } = require('../../../helpers/handlers/errorsHandler');
 const UploadTypes = require('../../../helpers/products/productsUploadTypes');
-const CSVBulkUpload = require('./CSVBulkUpload');
-const XLSXBulkUpload = require('./XLSXBulkUpload');
+const { validateCSVFile, readCSVFile } = require('./CSVBulkUpload');
+const { validateXLSXFile } = require('./XLSXBulkUpload');
 
 // STEP 01
 const productsBulkUploadValidation = async (req, res) => {
@@ -17,15 +17,23 @@ const productsBulkUploadValidation = async (req, res) => {
     const { uploadingType } = req.body;
     switch (true) {
       case uploadingType === UploadTypes.CSVFILE:
-        CSVBulkUpload.validateCSVFile(req, res);
+        validateCSVFile(req, res);
         break;
 
       case uploadingType === UploadTypes.XLSXFILE:
-        XLSXBulkUpload.validateXLSXFile(req, res);
+        validateXLSXFile(req, res);
         break;
 
       case uploadingType === UploadTypes.TXTFILE:
         break;
+
+      default:
+        return res.status(StatusCodes.BAD_REQUEST).json({
+          status: ReasonPhrases.BAD_REQUEST,
+          msg: `Only allowed these uploading types (${Object.values(
+            UploadTypes
+          ).join(', ')})`,
+        });
     }
   } catch (error) {
     errorsHandler(req, res, error, error.message);
@@ -36,32 +44,33 @@ const productsBulkUploadValidation = async (req, res) => {
 const productsBulkUpload = (req, res) => {
   try {
     const { uploadingType } = req.body;
+
     switch (true) {
       case uploadingType === UploadTypes.CSVFILE:
-        CSVBulkUpload.readCSVFile(req, res);
+        readCSVFile(req, res);
         break;
 
       case uploadingType === UploadTypes.XLSXFILE:
-        XLSXBulkUpload.readXLSXFile(req, res);
+        readXLSXFile(req, res);
         break;
 
       case uploadingType === UploadTypes.TXTFILE:
         break;
+
+      default:
+        return res.status(StatusCodes.BAD_REQUEST).json({
+          status: ReasonPhrases.BAD_REQUEST,
+          msg: `Only allowed these uploading types (${Object.values(
+            UploadTypes
+          ).join(', ')})`,
+        });
     }
   } catch (error) {
     errorsHandler(req, res, error);
   }
 };
 
-const checkFile = (req, res) => {
-  const { filePath } = req.body;
-  const file = existsSync(filePath);
-  if (!file) throw new Error("File doesn't exist");
-  return true;
-};
-
 module.exports = {
   productsBulkUploadValidation,
   productsBulkUpload,
-  checkFile,
 };

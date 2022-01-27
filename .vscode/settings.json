@@ -1,3 +1,4 @@
 {
-    "editor.fastScrollSensitivity": 7
+    "editor.fastScrollSensitivity": 10,
+    "editor.formatOnSave": true
 }

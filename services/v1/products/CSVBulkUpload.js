@@ -3,18 +3,17 @@ const validator = require('validator');
 const { createReadStream } = require('fs');
 const { StatusCodes, ReasonPhrases } = require('http-status-codes');
 const db = require('../../../config/db/models/index');
-const {Product} = require('../../../config/db/models/index');
+const { Product } = require('../../../config/db/models/index');
 const productsValidationSchema = require('../../../helpers/products/productsValidationSchema');
-const {checkFile} = require('./productsBulkUpload');
 const fieldsForCreatingProduct = require('../../../helpers/products/fieldsForCreatingProduct');
+const findFile = require('../../../helpers/files/findFile');
 // const ProductsLogService = require('../logs/productsLogs/bulkUploadLog');
 
 // STEP 01
 const validateCSVFile = (req, res) => {
   const file = req.file;
-  req.body.filePath = file.path;
   try {
-    checkFile(req, res);
+    findFile(file.path);
   } catch (error) {
     return res.status(StatusCodes.NOT_FOUND).json({
       statusCode: ReasonPhrases.NOT_FOUND,
@@ -32,9 +31,9 @@ const validateCSVFile = (req, res) => {
         mapHeaders: ({ header }) => header.toLowerCase().trim(),
       })
     )
-    .on('headers', (headers: string[]) => {
+    .on('headers', (headers) => {
       if (headers.length === 0 || headers[0] === '') {
-        // Delete file uploaded
+        // NOTE Delete file uploaded
 
         return res.status(StatusCodes.BAD_REQUEST).json({
           statusCode: ReasonPhrases.BAD_REQUEST,
@@ -51,7 +50,7 @@ const validateCSVFile = (req, res) => {
         filePath: file.path,
       });
     })
-    .on('error', (err: Error) => {
+    .on('error', (err) => {
       const message =
         err.message.length > 150 ? err.message.substring(0, 150) : err.message;
       return res
@@ -65,7 +64,7 @@ const readCSVFile = (req, res) => {
   const { filePath } = req.body;
 
   try {
-    ProductsBulkUploadService.checkFile(req, res);
+    findFile(filePath);
   } catch (error) {
     return res.status(StatusCodes.NOT_FOUND).json({
       statusCode: ReasonPhrases.NOT_FOUND,
@@ -77,7 +76,7 @@ const readCSVFile = (req, res) => {
     encoding: 'utf-8',
   });
 
-  const data = [] as CSVFileProductsBulkUpload[];
+  const data = [];
 
   reader
     .pipe(
@@ -102,7 +101,7 @@ const readCSVFile = (req, res) => {
       req.body.products = data;
       CSVFileProductsValidate(req, res);
     })
-    .on('error', (err: Error) => {
+    .on('error', (err) => {
       const message =
         err.message.length > 150 ? err.message.substring(0, 150) : err.message;
       return res
@@ -115,8 +114,8 @@ const readCSVFile = (req, res) => {
 const CSVFileProductsValidate = async (req, res) => {
   const { products, productData: matchColumns, userId } = req.body;
 
-  let position: number = 1;
-  const lastPosition: number = await Product.max('position', {
+  let position = 1;
+  const lastPosition = await Product.max('position', {
     where: {
       userId,
     },
@@ -164,11 +163,11 @@ const CSVFileProductsValidate = async (req, res) => {
   }
 
   req.body.validation = { failedUploads, successfulUploads };
-  ProductsUpload(req, res);
+  productsUpload(req, res);
 };
 
 // STEP 04
-const ProductsUpload = async (req, res) => {
+const productsUpload = async (req, res) => {
   const { failedUploads, successfulUploads } = req.body.validation;
 
   const message =
@@ -186,7 +185,7 @@ const ProductsUpload = async (req, res) => {
   let transaction;
   let successfulTransation = true;
   try {
-    transaction = await db.transaction();
+    transaction = await db.sequelize.transaction();
     await Product.bulkCreate(successfulUploads, {
       transaction,
     });
@@ -195,8 +194,9 @@ const ProductsUpload = async (req, res) => {
     await transaction.rollback();
     successfulTransation = false;
   } finally {
-    const log = await ProductsLogService.createLog(req, res);
-    const logId = log instanceof Error ? null : log.id;
+    // const log = await ProductsLogService.createLog(req, res);
+    // const logId = log instanceof Error ? null : log.id;
+    const logId = 10;
 
     if (!successfulTransation)
       return res.status(StatusCodes.BAD_REQUEST).json({
@@ -220,8 +220,8 @@ const ProductsUpload = async (req, res) => {
   }
 };
 
-export default {
+module.exports = {
   validateCSVFile,
   readCSVFile,
-  ProductsUpload,
+  productsUpload,
 };

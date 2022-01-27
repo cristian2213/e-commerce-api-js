@@ -1,39 +1,30 @@
-import multer, { DiskStorageOptions, Options } from 'multer';
-import { randomBytes } from 'crypto';
-import { Request } from 'express';
-import { existsSync, mkdirSync } from 'fs';
+const multer = require('multer');
+const { randomBytes } = require('crypto');
+const { existsSync, mkdirSync } = require('fs');
 
-const fileStorage = (path: string) => {
+const fileStorage = (path) => {
   const fileStorage = multer.diskStorage({
-    destination: (_req: Express.Request, _file: Express.Multer.File, cb) => {
+    destination: (_req, _file, cb) => {
       try {
         const pathExists = existsSync(path);
         if (!pathExists) {
           mkdirSync(path, { recursive: true });
         }
         cb(null, path);
-      } catch (error: any) {
+      } catch (error) {
         cb(new Error(error.message), path);
       }
     },
 
-    filename: (
-      _req: Express.Request,
-      file: Express.Multer.File,
-      cb: CallableFunction
-    ) => {
+    filename: (_req, file, cb) => {
       const randomName = randomBytes(10).toString('hex');
       cb(null, `${randomName}-${file.originalname}`);
     },
-  } as DiskStorageOptions);
+  });
   return fileStorage;
 };
 
-const fileFilter = (
-  _req: Request,
-  file: Express.Multer.File,
-  cb: CallableFunction
-) => {
+const fileFilter = (_req, file, cb) => {
   // {
   //   fieldname: 'productsFile',
   //   originalname: 'theory-lectures-v2-SMALLER_compressed.pdf',
@@ -45,8 +36,8 @@ const fileFilter = (
   cb(null, true);
 };
 
-const multerOptions = (path: string): Options => {
-  const options: Options = {
+const multerOptions = (path) => {
+  const options = {
     limits: {
       files: 1,
       fieldSize: 100000000,
@@ -57,6 +48,6 @@ const multerOptions = (path: string): Options => {
   return options;
 };
 
-export default {
+module.exports = {
   multerOptions,
 };

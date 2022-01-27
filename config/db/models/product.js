@@ -1,5 +1,7 @@
 'use strict';
 const { Model } = require('sequelize');
+const generateSlug = require('../../../helpers/products/generateSlug');
+
 module.exports = (sequelize, DataTypes) => {
   class Product extends Model {
     /**
