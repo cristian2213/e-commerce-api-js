@@ -1,219 +1,285 @@
 swagger: '2.0'
 info:
-  description: 'This is a sample server Petstore server.  You can find out more about     Swagger at [http://swagger.io](http://swagger.io) or on [irc.freenode.net, #swagger](http://swagger.io/irc/).      For this sample, you can use the api key `special-key` to test the authorization     filters.'
+  description: 'This is an amazing e-commerce project, where all users can sell and buy products without problems, it allows each user to have a dashboard with everything necessary to load products in the right way through different types of load, for example, loads. In .csv, .xlsx and .txt format and also dynamic loads using plain text and using regular expressions to mutate it to a correct format, in addition, this project will implement development tools such as Docker-compose and Docker containers for deployment on the server and to finish this project, I will implement notifications and a real time chat system using Socket.IO and create my own library using Canvas API to build graphs of system statistics, last but not least this project will have unit tests and good documentation made with Swagger.'
   version: '1.0.0'
-  title: 'Swagger Petstore'
-  termsOfService: 'http://swagger.io/terms/'
-  contact:
-    email: 'apiteam@swagger.io'
+  title: 'CIFULLMA'
   license:
-    name: 'Apache 2.0'
-    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
-host: 'petstore.swagger.io'
-basePath: '/v2'
+    name: 'Open source (MIT)'
+    url: 'https://opensource.org/licenses/MIT'
+host: '127.0.0.1:3000'
+basePath: '/api/v1'
 tags:
-  - name: 'pet'
-    description: 'Everything about your Pets'
-    externalDocs:
-      description: 'Find out more'
-      url: 'http://swagger.io'
-  - name: 'store'
-    description: 'Access to Petstore orders'
-  - name: 'user'
-    description: 'Operations about user'
-    externalDocs:
-      description: 'Find out more about our store'
-      url: 'http://swagger.io'
+  - name: 'Auth'
+    description: 'Everything about Authentication'
+    # externalDocs:
+    # description: 'Find out more'
+    # url: 'http://swagger.io'
+  # - name: 'store'
+  #   description: 'Access to Petstore orders'
+  # - name: 'user'
+  #   description: 'Operations about user'
+  #   externalDocs:
+  #     description: 'Find out more about our store'
+  #     url: 'http://swagger.io'
 schemes:
-  - 'https'
   - 'http'
+  - 'https'
 paths:
-  /user:
+  /auth/signin:
     post:
       tags:
-        - 'user'
-      summary: 'Create user'
-      description: 'This can only be done by the logged in user.'
-      operationId: 'createUser'
+        - 'Auth'
+      summary: 'Create account'
+      description: 'Create account using the email and password field.'
       produces:
-        - 'application/xml'
         - 'application/json'
       parameters:
         - in: 'body'
           name: 'body'
-          description: 'Created user object'
+          description: 'Creation object'
           required: true
           schema:
-            $ref: '#/definitions/User'
+            type: 'object'
+            properties:
+              name:
+                type: 'string'
+                example: 'christian'
+              email:
+                type: 'string'
+                example: 'example@gmail.com'
+              password:
+                type: 'string'
+                example: 'user123A@'
+              confirmPassword:
+                type: 'string'
+                example: 'user123A@'
+              roles:
+                type: 'array'
+                items:
+                  type: 'string'
+                  example: 'user'
+            required:
+              - name
+              - email
+              - password
+              - confirmPassword
+              - roles
       responses:
-        default:
-          description: 'successful operation'
-  /user/createWithArray:
-    post:
-      tags:
-        - 'user'
-      summary: 'Creates list of users with given input array'
-      description: ''
-      operationId: 'createUsersWithArrayInput'
-      produces:
-        - 'application/xml'
-        - 'application/json'
-      parameters:
-        - in: 'body'
-          name: 'body'
-          description: 'List of user object'
-          required: true
+        201:
+          description: 'Ok request'
           schema:
-            type: 'array'
-            items:
-              $ref: '#/definitions/User'
-      responses:
-        default:
-          description: 'successful operation'
-  /user/createWithList:
-    post:
-      tags:
-        - 'user'
-      summary: 'Creates list of users with given input array'
-      description: ''
-      operationId: 'createUsersWithListInput'
-      produces:
-        - 'application/xml'
-        - 'application/json'
-      parameters:
-        - in: 'body'
-          name: 'body'
-          description: 'List of user object'
-          required: true
+            type: 'object'
+            properties:
+              statusCode:
+                type: 'integer'
+                example: 201
+              message:
+                type: 'string'
+                example: "We've seen a confirmation email to your account"
+              confirmationURL:
+                type: 'string'
+                example: 'path_of_front_end/${token}'
+                description: 'This Is going to be the route in the front-end which going to be shown when the user open the link sent to the e-mail, Here before that the component loads is required to get the token from the URL and making the request to the back-end for the validation of the token'
+        400:
+          description: 'Bad request - This error array can contain 4 errors, each one by each property in the body.'
           schema:
-            type: 'array'
-            items:
-              $ref: '#/definitions/User'
-      responses:
-        default:
-          description: 'successful operation'
-  /user/login:
-    get:
-      tags:
-        - 'user'
-      summary: 'Logs user into the system'
-      description: ''
-      operationId: 'loginUser'
-      produces:
-        - 'application/xml'
-        - 'application/json'
-      parameters:
-        - name: 'username'
-          in: 'query'
-          description: 'The user name for login'
-          required: true
-          type: 'string'
-        - name: 'password'
-          in: 'query'
-          description: 'The password for login in clear text'
-          required: true
-          type: 'string'
-      responses:
-        '200':
-          description: 'successful operation'
+            type: 'object'
+            properties:
+              errors:
+                type: 'array'
+                items:
+                  $ref: '#/definitions/SignUpErros'
+        500:
+          description: 'Internal server error'
           schema:
-            type: 'string'
-          headers:
-            X-Rate-Limit:
-              type: 'integer'
-              format: 'int32'
-              description: 'calls per hour allowed by the user'
-            X-Expires-After:
-              type: 'string'
-              format: 'date-time'
-              description: 'date in UTC when token expires'
-        '400':
-          description: 'Invalid username/password supplied'
-  /user/logout:
-    get:
-      tags:
-        - 'user'
-      summary: 'Logs out current logged in user session'
-      description: ''
-      operationId: 'logoutUser'
-      produces:
-        - 'application/xml'
-        - 'application/json'
-      parameters: []
-      responses:
-        default:
-          description: 'successful operation'
-  /user/{username}:
-    get:
-      tags:
-        - 'user'
-      summary: 'Get user by user name'
-      description: ''
-      operationId: 'getUserByName'
-      produces:
-        - 'application/xml'
-        - 'application/json'
-      parameters:
-        - name: 'username'
-          in: 'path'
-          description: 'The name that needs to be fetched. Use user1 for testing. '
-          required: true
-          type: 'string'
-      responses:
-        '200':
-          description: 'successful operation'
-          schema:
-            $ref: '#/definitions/User'
-        '400':
-          description: 'Invalid username supplied'
-        '404':
-          description: 'User not found'
-    put:
-      tags:
-        - 'user'
-      summary: 'Updated user'
-      description: 'This can only be done by the logged in user.'
-      operationId: 'updateUser'
-      produces:
-        - 'application/xml'
-        - 'application/json'
-      parameters:
-        - name: 'username'
-          in: 'path'
-          description: 'name that need to be updated'
-          required: true
-          type: 'string'
-        - in: 'body'
-          name: 'body'
-          description: 'Updated user object'
-          required: true
-          schema:
-            $ref: '#/definitions/User'
-      responses:
-        '400':
-          description: 'Invalid user supplied'
-        '404':
-          description: 'User not found'
-    delete:
-      tags:
-        - 'user'
-      summary: 'Delete user'
-      description: 'This can only be done by the logged in user.'
-      operationId: 'deleteUser'
-      produces:
-        - 'application/xml'
-        - 'application/json'
-      parameters:
-        - name: 'username'
-          in: 'path'
-          description: 'The name that needs to be deleted'
-          required: true
-          type: 'string'
-      responses:
-        '400':
-          description: 'Invalid username supplied'
-        '404':
-          description: 'User not found'
+            $ref: '#/definitions/ServerError'
+
+  # /user:
+  #   post:
+  #     tags:
+  #       - 'user'
+  #     summary: 'Create user'
+  #     description: 'This can only be done by the logged in user.'
+  #     operationId: 'createUser'
+  #     produces:
+  #       - 'application/xml'
+  #       - 'application/json'
+  #     parameters:
+  #       - in: 'body'
+  #         name: 'body'
+  #         description: 'Created user object'
+  #         required: true
+  #         schema:
+  #           $ref: '#/definitions/User'
+  #     responses:
+  #       default:
+  #         description: 'successful operation'
+  # /user/createWithArray:
+  #   post:
+  #     tags:
+  #       - 'user'
+  #     summary: 'Creates list of users with given input array'
+  #     description: ''
+  #     operationId: 'createUsersWithArrayInput'
+  #     produces:
+  #       - 'application/xml'
+  #       - 'application/json'
+  #     parameters:
+  #       - in: 'body'
+  #         name: 'body'
+  #         description: 'List of user object'
+  #         required: true
+  #         schema:
+  #           type: 'array'
+  #           items:
+  #             $ref: '#/definitions/User'
+  #     responses:
+  #       default:
+  #         description: 'successful operation'
+  # /user/createWithList:
+  #   post:
+  #     tags:
+  #       - 'user'
+  #     summary: 'Creates list of users with given input array'
+  #     description: ''
+  #     operationId: 'createUsersWithListInput'
+  #     produces:
+  #       - 'application/xml'
+  #       - 'application/json'
+  #     parameters:
+  #       - in: 'body'
+  #         name: 'body'
+  #         description: 'List of user object'
+  #         required: true
+  #         schema:
+  #           type: 'array'
+  #           items:
+  #             $ref: '#/definitions/User'
+  #     responses:
+  #       default:
+  #         description: 'successful operation'
+  # /user/login:
+  #   get:
+  #     tags:
+  #       - 'user'
+  #     summary: 'Logs user into the system'
+  #     description: ''
+  #     operationId: 'loginUser'
+  #     produces:
+  #       - 'application/xml'
+  #       - 'application/json'
+  #     parameters:
+  #       - name: 'username'
+  #         in: 'query'
+  #         description: 'The user name for login'
+  #         required: true
+  #         type: 'string'
+  #       - name: 'password'
+  #         in: 'query'
+  #         description: 'The password for login in clear text'
+  #         required: true
+  #         type: 'string'
+  #     responses:
+  #       '200':
+  #         description: 'successful operation'
+  #         schema:
+  #           type: 'string'
+  #         headers:
+  #           X-Rate-Limit:
+  #             type: 'integer'
+  #             format: 'int32'
+  #             description: 'calls per hour allowed by the user'
+  #           X-Expires-After:
+  #             type: 'string'
+  #             format: 'date-time'
+  #             description: 'date in UTC when token expires'
+  #       '400':
+  #         description: 'Invalid username/password supplied'
+  # /user/logout:
+  #   get:
+  #     tags:
+  #       - 'user'
+  #     summary: 'Logs out current logged in user session'
+  #     description: ''
+  #     operationId: 'logoutUser'
+  #     produces:
+  #       - 'application/xml'
+  #       - 'application/json'
+  #     parameters: []
+  #     responses:
+  #       default:
+  #         description: 'successful operation'
+  # /user/{username}:
+  #   get:
+  #     tags:
+  #       - 'user'
+  #     summary: 'Get user by user name'
+  #     description: ''
+  #     operationId: 'getUserByName'
+  #     produces:
+  #       - 'application/xml'
+  #       - 'application/json'
+  #     parameters:
+  #       - name: 'username'
+  #         in: 'path'
+  #         description: 'The name that needs to be fetched. Use user1 for testing. '
+  #         required: true
+  #         type: 'string'
+  #     responses:
+  #       '200':
+  #         description: 'successful operation'
+  #         schema:
+  #           $ref: '#/definitions/User'
+  #       '400':
+  #         description: 'Invalid username supplied'
+  #       '404':
+  #         description: 'User not found'
+  #   put:
+  #     tags:
+  #       - 'user'
+  #     summary: 'Updated user'
+  #     description: 'This can only be done by the logged in user.'
+  #     operationId: 'updateUser'
+  #     produces:
+  #       - 'application/xml'
+  #       - 'application/json'
+  #     parameters:
+  #       - name: 'username'
+  #         in: 'path'
+  #         description: 'name that need to be updated'
+  #         required: true
+  #         type: 'string'
+  #       - in: 'body'
+  #         name: 'body'
+  #         description: 'Updated user object'
+  #         required: true
+  #         schema:
+  #           $ref: '#/definitions/User'
+  #     responses:
+  #       '400':
+  #         description: 'Invalid user supplied'
+  #       '404':
+  #         description: 'User not found'
+  #   delete:
+  #     tags:
+  #       - 'user'
+  #     summary: 'Delete user'
+  #     description: 'This can only be done by the logged in user.'
+  #     operationId: 'deleteUser'
+  #     produces:
+  #       - 'application/xml'
+  #       - 'application/json'
+  #     parameters:
+  #       - name: 'username'
+  #         in: 'path'
+  #         description: 'The name that needs to be deleted'
+  #         required: true
+  #         type: 'string'
+  #     responses:
+  #       '400':
+  #         description: 'Invalid username supplied'
+  #       '404':
+  #         description: 'User not found'
 securityDefinitions:
   petstore_auth:
     type: 'oauth2'
@@ -227,124 +293,155 @@ securityDefinitions:
     name: 'api_key'
     in: 'header'
 definitions:
-  Order:
+  # Order:
+  #   type: 'object'
+  #   properties:
+  #     id:
+  #       type: 'integer'
+  #       format: 'int64'
+  #     petId:
+  #       type: 'integer'
+  #       format: 'int64'
+  #     quantity:
+  #       type: 'integer'
+  #       format: 'int32'
+  #     shipDate:
+  #       type: 'string'
+  #       format: 'date-time'
+  #     status:
+  #       type: 'string'
+  #       description: 'Order Status'
+  #       enum:
+  #         - 'placed'
+  #         - 'approved'
+  #         - 'delivered'
+  #     complete:
+  #       type: 'boolean'
+  #       default: false
+  #   xml:
+  #     name: 'Order'
+  # Category:
+  #   type: 'object'
+  #   properties:
+  #     id:
+  #       type: 'integer'
+  #       format: 'int64'
+  #     name:
+  #       type: 'string'
+  #   xml:
+  #     name: 'Category'
+
+  SignUpErros:
     type: 'object'
     properties:
-      id:
-        type: 'integer'
-        format: 'int64'
-      petId:
-        type: 'integer'
-        format: 'int64'
-      quantity:
-        type: 'integer'
-        format: 'int32'
-      shipDate:
+      value:
         type: 'string'
-        format: 'date-time'
-      status:
+        example: 'example@gmail.com'
+        description: 'Value entered by the user.'
+      msg:
         type: 'string'
-        description: 'Order Status'
-        enum:
-          - 'placed'
-          - 'approved'
-          - 'delivered'
-      complete:
-        type: 'boolean'
-        default: false
-    xml:
-      name: 'Order'
-  Category:
+        example: 'The email exists already.'
+        description: 'Error message'
+      param:
+        type: 'string'
+        example: 'email'
+        description: 'Propety with the error.'
+      location:
+        type: 'string'
+        example: 'body'
+        description: 'Contain the reference to the place where the property is located.'
+
+  ServerError:
     type: 'object'
     properties:
-      id:
+      statusCode:
         type: 'integer'
-        format: 'int64'
-      name:
-        type: 'string'
-    xml:
-      name: 'Category'
-  User:
-    type: 'object'
-    properties:
-      id:
-        type: 'integer'
-        format: 'int64'
-      username:
-        type: 'string'
-      firstName:
-        type: 'string'
-      lastName:
-        type: 'string'
-      email:
-        type: 'string'
-      password:
-        type: 'string'
-      phone:
-        type: 'string'
-      userStatus:
-        type: 'integer'
-        format: 'int32'
-        description: 'User Status'
-    xml:
-      name: 'User'
-  Tag:
-    type: 'object'
-    properties:
-      id:
-        type: 'integer'
-        format: 'int64'
-      name:
-        type: 'string'
-    xml:
-      name: 'Tag'
-  Pet:
-    type: 'object'
-    required:
-      - 'name'
-      - 'photoUrls'
-    properties:
-      id:
-        type: 'integer'
-        format: 'int64'
-      category:
-        $ref: '#/definitions/Category'
-      name:
-        type: 'string'
-        example: 'doggie'
-      photoUrls:
-        type: 'array'
-        xml:
-          name: 'photoUrl'
-          wrapped: true
-        items:
-          type: 'string'
-      tags:
-        type: 'array'
-        xml:
-          name: 'tag'
-          wrapped: true
-        items:
-          $ref: '#/definitions/Tag'
-      status:
-        type: 'string'
-        description: 'pet status in the store'
-        enum:
-          - 'available'
-          - 'pending'
-          - 'sold'
-    xml:
-      name: 'Pet'
-  ApiResponse:
-    type: 'object'
-    properties:
-      code:
-        type: 'integer'
-        format: 'int32'
-      type:
-        type: 'string'
+        example: 500
       message:
         type: 'string'
+        description: 'Aleatory error.'
+
+  # User:
+  #   type: 'object'
+  #   properties:
+  #     id:
+  #       type: 'integer'
+  #       format: 'int64'
+  #     username:
+  #       type: 'string'
+  #     firstName:
+  #       type: 'string'
+  #     lastName:
+  #       type: 'string'
+  #     email:
+  #       type: 'string'
+  #     password:
+  #       type: 'string'
+  #     phone:
+  #       type: 'string'
+  #     userStatus:
+  #       type: 'integer'
+  #       format: 'int32'
+  #       description: 'User Status'
+  #   xml:
+  #     name: 'User'
+  # Tag:
+  #   type: 'object'
+  #   properties:
+  #     id:
+  #       type: 'integer'
+  #       format: 'int64'
+  #     name:
+  #       type: 'string'
+  #   xml:
+  #     name: 'Tag'
+  # Pet:
+  #   type: 'object'
+  #   required:
+  #     - 'name'
+  #     - 'photoUrls'
+  #   properties:
+  #     id:
+  #       type: 'integer'
+  #       format: 'int64'
+  #     category:
+  #       $ref: '#/definitions/Category'
+  #     name:
+  #       type: 'string'
+  #       example: 'doggie'
+  #     photoUrls:
+  #       type: 'array'
+  #       xml:
+  #         name: 'photoUrl'
+  #         wrapped: true
+  #       items:
+  #         type: 'string'
+  #     tags:
+  #       type: 'array'
+  #       xml:
+  #         name: 'tag'
+  #         wrapped: true
+  #       items:
+  #         $ref: '#/definitions/Tag'
+  #     status:
+  #       type: 'string'
+  #       description: 'pet status in the store'
+  #       enum:
+  #         - 'available'
+  #         - 'pending'
+  #         - 'sold'
+  #   xml:
+  #     name: 'Pet'
+  # ApiResponse:
+  #   type: 'object'
+  #   properties:
+  #     code:
+  #       type: 'integer'
+  #       format: 'int32'
+  #     type:
+  #       type: 'string'
+  #     message:
+  #       type: 'string'
 externalDocs:
   description: 'Find out more about Swagger'
   url: 'http://swagger.io'

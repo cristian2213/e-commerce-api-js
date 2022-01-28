@@ -14,7 +14,7 @@ dist/
 
 # Files
 *.img
-*.jpg
+# *.jpg
 *.png
 *.pdf
 *.txt

@@ -81,6 +81,10 @@ These are the technologies with which this project is being built, I had thought
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
+<!-- PROGRESS -->
+![Swagger](progress/swagger.jpg?raw=true 'Swagger')
+
+
 <!-- GETTING STARTED -->
 
 ## Getting Started
