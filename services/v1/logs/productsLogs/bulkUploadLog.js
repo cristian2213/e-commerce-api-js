@@ -1,18 +1,17 @@
-import { existsSync, mkdirSync, writeFileSync } from 'fs';
-import { join, parse, sep } from 'path';
-import { StatusCodes, ReasonPhrases } from 'http-status-codes';
-import { errorsHandler } from './../../../../helpers/v1/handlers/errorsHandler';
-import { Request, Response } from 'express';
-import Log, { LogInstance } from '../../../../models/v1/logs/log';
-import generateRandomString from '../../../../helpers/v1/globals/generateRandomString';
-import rootPath from '../../../../helpers/v1/paths/rootPath';
+const { existsSync, mkdirSync, writeFileSync } = require('fs');
+const { join, parse, sep } = require('path');
+const { StatusCodes, ReasonPhrases } = require('http-status-codes');
+const errorsHandler = require('./../../../../helpers/handlers/errorsHandler');
+const { Log } = require('../../../../config/db/models/index');
+const generateRandomString = require('../../../../helpers/tokens/generateRandomString');
+const { rootPath } = require('../../../../helpers/paths/path');
 
-const createLog = async (req: Request, res: Response): Promise<LogInstance> => {
+const createLog = async (req, res) => {
   const { failedUploads, successfulUploads } = req.body.validation;
   const { filePath } = req.body;
   try {
     const log = await Log.create({
-      logType: 'products',
+      logType: 'product',
       successfulUploads: successfulUploads.length,
       failedUploads: failedUploads.length,
       errors: JSON.stringify(failedUploads),
@@ -20,12 +19,13 @@ const createLog = async (req: Request, res: Response): Promise<LogInstance> => {
       filePath,
     });
     return log;
-  } catch (error: any) {
+  } catch (error) {
+    console.log(error);
     return error;
   }
 };
 
-const findLog = async (req: Request): Promise<any> => {
+const findLog = async (req) => {
   const { userId } = req.body;
   const id = req.body.logId ? req.body.logId : req.params.logId;
   const log = await Log.findOne({
@@ -43,15 +43,15 @@ const findLog = async (req: Request): Promise<any> => {
   return log;
 };
 
-const downloadLog = async (req: Request, res: Response): Promise<any> => {
-  const { id } = req.params;
+const downloadLog = async (req, res) => {
+  const { logId } = req.params;
   try {
-    const log = await Log.findByPk(id);
+    const log = await Log.findByPk(logId);
 
     if (!log)
       return res.status(StatusCodes.NOT_FOUND).json({
         statusCode: ReasonPhrases.NOT_FOUND,
-        message: `Log #${id} doesn't exist`,
+        message: `Log #${logId} doesn't exist`,
       });
 
     const errors = JSON.parse(log.errors);
@@ -59,26 +59,27 @@ const downloadLog = async (req: Request, res: Response): Promise<any> => {
     if (errors.length === 0)
       return res.status(StatusCodes.NO_CONTENT).json({
         statusCode: ReasonPhrases.NO_CONTENT,
-        message: `The log #${id} doesn't have errors for downloading`,
+        message: `The log #${logId} doesn't have errors for downloading`,
       });
 
-    const savingDir = join(rootPath(), 'storage', 'v1', 'logs', 'products'); // /src
+    const savingDir = join(rootPath(), 'storage', 'logs', 'products');
     if (!existsSync(savingDir)) mkdirSync(savingDir, { recursive: true });
 
     const normalizedPath = join(...log.filePath.split(sep));
-    const { dir, name } = parse(normalizedPath.replace('docs', 'logs'));
+    const { dir, name } = parse(normalizedPath.replace('docs', 'logs')); // PARSE return an object with path information
     const fileToDownload = join(dir, name) + '.txt';
 
     res.setHeader('Content-Type', 'text/plain');
     res.setHeader(
       'Content-Disposition',
-      'attachment; filename="' + generateRandomString(12) + '.txt' + '"'
+      'attachment; filename="' + generateRandomString() + '.txt' + '"'
     );
 
     if (existsSync(fileToDownload)) {
       return res.download(fileToDownload);
     }
 
+    // GENERATE file
     const totalErrors = errors.length;
     const txtFileContent = [];
     for (let i = 0; i < totalErrors; i++) {
@@ -97,7 +98,7 @@ const downloadLog = async (req: Request, res: Response): Promise<any> => {
   }
 };
 
-const getLogs = async (req: Request, res: Response) => {
+const getLogs = async (req, res) => {
   const { userId } = req.body;
 
   try {
@@ -111,22 +112,22 @@ const getLogs = async (req: Request, res: Response) => {
       logs,
       totalLog: logs.length,
     });
-  } catch (error: any) {
+  } catch (error) {
     errorsHandler(req, res, error);
   }
 };
 
-const getLog = async (req: Request, res: Response) => {
+const getLog = async (req, res) => {
   try {
     const response = await findLog(req);
     if (!response.id) return res.status(StatusCodes.NOT_FOUND).json(response);
     return res.status(StatusCodes.OK).json(response);
-  } catch (error: any) {
+  } catch (error) {
     errorsHandler(req, res, error);
   }
 };
 
-const deleteLog = async (req: Request, res: Response) => {
+const deleteLog = async (req, res) => {
   try {
     const response = await findLog(req);
     if (!response.id) return res.status(StatusCodes.NOT_FOUND).json(response);
@@ -135,12 +136,12 @@ const deleteLog = async (req: Request, res: Response) => {
       statusCode: ReasonPhrases.OK,
       message: `Log #${response.id} was deleted!`,
     });
-  } catch (error: any) {
+  } catch (error) {
     errorsHandler(req, res, error);
   }
 };
 
-export default {
+module.exports = {
   createLog,
   downloadLog,
   getLogs,

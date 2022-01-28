@@ -1,9 +1,8 @@
-import { Request, Response, NextFunction } from 'express';
-import { param, body } from 'express-validator';
-import validationHandler from '../../../helpers/v1/handlers/validationHandler';
-import UsersService from '../../../services/v1/users/users';
+const { param, body } = require('express-validator');
+const validationHandler = require('../../../helpers/handlers/validationHandler');
+const { checkUser } = require('../../../services/v1/users/users');
 
-export const getLogReq = [
+const getLogReq = [
   param('logId')
     .exists()
     .withMessage('The id param is required')
@@ -19,10 +18,12 @@ export const getLogReq = [
     .withMessage('The userId field must be a number')
     .bail()
     .custom((userId) => {
-      return UsersService.checkUser(userId);
+      return checkUser(userId);
     }),
 
-  (req: Request, res: Response, next: NextFunction) => {
+  (req, res, next) => {
     validationHandler(req, res, next);
   },
 ];
+
+module.exports = { getLogReq };

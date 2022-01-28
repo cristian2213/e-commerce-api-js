@@ -1,51 +1,32 @@
 'use strict';
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('Products', {
+    await queryInterface.createTable('Logs', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER(),
       },
-      name: {
-        type: Sequelize.STRING(255),
+      logType: {
+        type: Sequelize.ENUM('product'),
         allowNull: false,
       },
-      title: {
-        type: Sequelize.STRING(255),
+      successfulUploads: {
+        type: Sequelize.INTEGER({ unsigned: true }),
         allowNull: false,
       },
-      description: {
+      failedUploads: {
+        type: Sequelize.INTEGER({ unsigned: true }),
+        allowNull: false,
+      },
+      errors: {
         type: Sequelize.TEXT,
-        allowNull: false,
-      },
-      price: {
-        type: Sequelize.DECIMAL(12, 2),
-        allowNull: false,
-      },
-      slug: {
-        type: Sequelize.STRING(255),
-        allowNull: false,
-        unique: true,
-      },
-      stock: {
-        type: Sequelize.SMALLINT({ unsigned: true }),
-        allowNull: true,
-        defaultValue: 1,
-      },
-      status: {
-        type: Sequelize.BOOLEAN,
-        allowNull: true,
-        defaultValue: 1,
-      },
-      likes: {
-        type: Sequelize.SMALLINT({ unsigned: true }),
         allowNull: true,
         defaultValue: 0,
       },
-      position: {
-        type: Sequelize.SMALLINT({ unsigned: true }),
+      filePath: {
+        type: Sequelize.STRING(255),
         allowNull: false,
       },
       userId: {
@@ -68,6 +49,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('Products');
+    await queryInterface.dropTable('Logs');
   },
 };

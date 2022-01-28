@@ -1,4 +1,4 @@
-const { errorsHandler } = require('./../../../helpers/handlers/errorsHandler');
+const errorsHandler = require('./../../../helpers/handlers/errorsHandler');
 const { StatusCodes, ReasonPhrases } = require('http-status-codes');
 const XLSX = require('xlsx');
 const fieldsForCreatingProduct = require('../../../helpers/products/fieldsForCreatingProduct');
@@ -6,14 +6,13 @@ const validator = require('validator');
 const { Product } = require('../../../config/db/models/index');
 const productsValidationSchema = require('../../../helpers/products/productsValidationSchema');
 const { productsUpload } = require('./CSVBulkUpload');
+const findFile = require('../../../helpers/files/findFile');
 
 // 01 HEADERS VALIDATE
 const validateXLSXFile = (req, res) => {
   const file = req.file;
-  req.body.filePath = file.path;
-
   try {
-    checkFile(req, res);
+    findFile(file.path); // VALIDATE UPLOADING
   } catch (error) {
     return res.status(StatusCodes.NOT_FOUND).json({
       statusCode: ReasonPhrases.NOT_FOUND,
@@ -34,7 +33,7 @@ const validateXLSXFile = (req, res) => {
 
   if (!columns) return res.status(StatusCodes.BAD_REQUEST).json(badRequestMsg);
 
-  const lastColumn = columns.trim().split(':')[1]; // A1:E10 => ['A1', 'E10']
+  const lastColumn = columns.trim().split(':')[1]; // A1:E10 => ['A1', 'E10'] but ['A1', 'undefined']
   if (lastColumn === undefined)
     return res.status(StatusCodes.BAD_REQUEST).json({
       ...badRequestMsg,
@@ -55,7 +54,7 @@ const validateXLSXFile = (req, res) => {
   for (let i = 65; i <= 90; i++) {
     const coordinates = String.fromCharCode(i) + row;
     const cellData = worksheet[coordinates];
-    if (cellData === undefined) continue;
+    if (cellData == undefined) continue;
     headers.push({ value: cellData.v, coordinates });
   }
   // Function for immutability
@@ -70,11 +69,11 @@ const validateXLSXFile = (req, res) => {
 
 // 02 READ FILE
 const readXLSXFile = (req, res) => {
-  const { filePath, userId } = req.body;
+  const { filePath } = req.body;
 
   // Custom validation
   try {
-    checkFile(req, res);
+    findFile(filePath);
   } catch (error) {
     return res.status(StatusCodes.NOT_FOUND).json({
       statusCode: ReasonPhrases.NOT_FOUND,
@@ -85,17 +84,17 @@ const readXLSXFile = (req, res) => {
   try {
     const workbook = XLSX.readFile(filePath);
     const firstSheet = workbook.SheetNames[0];
-    const workSheet = workbook.Sheets[firstSheet];
+    const workSheet = workbook.Sheets[firstSheet]; // I select the first sheet🧾
 
     const columns = workSheet['!ref'];
     const lastColumn = columns.trim().split(':')[1]; // A1:E10 => ['A1', 'E10']
 
     const { productData: column } = req.body;
-    const records = lastColumn.match(/\d+/g);
+    const records = lastColumn.match(/\d+/g); // GET the maximum number of records "E10" => "10"
     const totalRecords = +records[0];
     const products = [];
 
-    // Get needed data for creating a product according to the coordinate
+    // GET DATA according to the coordinate and escaping their values for SECURITY
     for (let row = 2; row <= totalRecords; row++) {
       products.push({
         name: workSheet[column.name + row]
@@ -184,7 +183,7 @@ const XLSXFileProductsValidate = async (req, res) => {
   req.body.validation = { failedUploads, successfulUploads };
 
   // 04 MAKE BULK UPLOAD
-  ProductsUpload(req, res);
+  productsUpload(req, res);
 };
 
 module.exports = {

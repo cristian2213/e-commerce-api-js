@@ -1,9 +1,8 @@
-const { existsSync } = require('fs');
 const { StatusCodes, ReasonPhrases } = require('http-status-codes');
-const { errorsHandler } = require('../../../helpers/handlers/errorsHandler');
+const errorsHandler = require('../../../helpers/handlers/errorsHandler');
 const UploadTypes = require('../../../helpers/products/productsUploadTypes');
 const { validateCSVFile, readCSVFile } = require('./CSVBulkUpload');
-const { validateXLSXFile } = require('./XLSXBulkUpload');
+const { validateXLSXFile, readXLSXFile } = require('./XLSXBulkUpload');
 
 // STEP 01
 const productsBulkUploadValidation = async (req, res) => {

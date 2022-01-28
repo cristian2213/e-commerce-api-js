@@ -39,6 +39,7 @@
     "slugify": "^1.6.5",
     "supertest": "^6.2.1",
     "swagger-ui-express": "^4.3.0",
-    "xlsx": "^0.17.5"
+    "xlsx": "^0.17.5",
+    "yamljs": "^0.3.0"
   }
 }

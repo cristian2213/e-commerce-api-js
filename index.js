@@ -8,7 +8,8 @@ const { join } = require('path');
 const swaggerUi = require('swagger-ui-express');
 const routerV1 = require('./routes/v1/router');
 const validateSchema = require('./helpers/env/validationSchema.helper');
-const swagger = require('./config/swagger/swagger.json');
+const YAML = require('yamljs');
+const swagger = YAML.load('./config/swagger/swagger.yaml');
 
 const app = express();
 const port = process.env.APP_PORT || 3000;

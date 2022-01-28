@@ -7,7 +7,8 @@ const { Product } = require('../../../config/db/models/index');
 const productsValidationSchema = require('../../../helpers/products/productsValidationSchema');
 const fieldsForCreatingProduct = require('../../../helpers/products/fieldsForCreatingProduct');
 const findFile = require('../../../helpers/files/findFile');
-// const ProductsLogService = require('../logs/productsLogs/bulkUploadLog');
+
+const { createLog } = require('../logs/productsLogs/bulkUploadLog');
 
 // STEP 01
 const validateCSVFile = (req, res) => {
@@ -194,9 +195,9 @@ const productsUpload = async (req, res) => {
     await transaction.rollback();
     successfulTransation = false;
   } finally {
-    // const log = await ProductsLogService.createLog(req, res);
-    // const logId = log instanceof Error ? null : log.id;
-    const logId = 10;
+    const log = await createLog(req, res);
+    const logId = log instanceof Error ? null : log.id;
+    const logMessage = logId ? 'Created!' : 'Not created!';
 
     if (!successfulTransation)
       return res.status(StatusCodes.BAD_REQUEST).json({
@@ -205,7 +206,7 @@ const productsUpload = async (req, res) => {
         message: resMsg.message,
         log: {
           logId,
-          message: 'The log was not created!',
+          message: logMessage,
         },
       });
 
@@ -214,7 +215,7 @@ const productsUpload = async (req, res) => {
       message: 'Ok',
       log: {
         logId,
-        message: 'Created!',
+        message: logMessage,
       },
     });
   }
