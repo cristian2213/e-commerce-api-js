@@ -51,6 +51,7 @@ module.exports = (sequelize, DataTypes) => {
 
       userId: {
         type: DataTypes.INTEGER,
+        allowNull: false,
         references: {
           // NOTE THIS IS THE REFERENCE TO THE MODEL
           model: 'User',

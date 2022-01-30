@@ -1,27 +1,34 @@
 'use strict';
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('Roles', {
+    await queryInterface.createTable('ProductsTags', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER,
       },
-      name: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      userId: {
+      // **** N:N IN DB ****
+      productId: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          // NOTE THIS IS THE REFERENCE TO THE NAME TABLE
-          model: 'Users',
+          // THIS'S THE REFERENCE TO THE TABLE IN DATABASE
+          model: 'Products',
           key: 'id',
         },
-        onDelete: 'CASCADE',
       },
+      tagId: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        references: {
+          // THIS'S THE REFERENCE TO THE TABLE IN DATABASE
+          model: 'Tags',
+          key: 'id',
+        },
+      },
+      // ****************
+
       createdAt: {
         allowNull: true,
         type: Sequelize.DATE,
@@ -35,6 +42,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('Roles');
+    await queryInterface.dropTable('ProductsTags');
   },
 };

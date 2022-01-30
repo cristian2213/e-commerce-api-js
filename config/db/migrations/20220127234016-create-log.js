@@ -6,7 +6,7 @@ module.exports = {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER(),
+        type: Sequelize.INTEGER,
       },
       logType: {
         type: Sequelize.ENUM('product'),
@@ -31,6 +31,7 @@ module.exports = {
       },
       userId: {
         type: Sequelize.INTEGER,
+        allowNull: false,
         references: {
           // NOTE THIS IS THE REFERENCE TO THE NAME TABLE
           model: 'Users',
@@ -39,12 +40,14 @@ module.exports = {
         onDelete: 'CASCADE',
       },
       createdAt: {
-        allowNull: false,
+        allowNull: true,
         type: Sequelize.DATE,
+        defaultValue: new Date(),
       },
       updatedAt: {
-        allowNull: false,
+        allowNull: true,
         type: Sequelize.DATE,
+        defaultValue: new Date(),
       },
     });
   },

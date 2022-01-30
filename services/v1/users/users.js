@@ -65,6 +65,7 @@ const getUsers = async (req, res) => {
         as: 'roles',
         attributes: ['name'],
       },
+      // include: ['roles'],
       attributes: ['id', 'name', 'email', 'createdAt', 'updatedAt'],
     });
     return res.status(StatusCodes.OK).json(users);

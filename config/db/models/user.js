@@ -13,16 +13,15 @@ module.exports = (sequelize, DataTypes) => {
       // ******** 1:N ********
       User.hasMany(models.Role, {
         // The foreing key should be provided here, on the contrary the model with the fk will returns two FKs
-        foreignKey: 'id',
+        foreignKey: 'userId', // Name in the table with the FK
         as: 'roles',
       });
-      // The foreing key must be provided in the table with the relationship N
       User.hasMany(models.Product, {
-        foreignKey: 'id',
+        foreignKey: 'userId',
         as: 'products',
       });
       User.hasMany(models.Log, {
-        foreignKey: 'id',
+        foreignKey: 'userId',
         as: 'logs',
       });
       // *********************

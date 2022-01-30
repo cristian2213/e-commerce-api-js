@@ -19,17 +19,30 @@ const createProduct = async (req, res) => {
     req.body.position = position;
     req.body.slug = generateSlug(req.body.slug);
 
-    const product = await Product.create(
-      {
-        ...req.body,
-      },
-      {}
-    );
+    // CREATE PRODUCT
+    const product = await Product.create({
+      ...req.body,
+    });
     await product.reload();
-    return res.status(StatusCodes.CREATED).json(product);
+
+    const tags = await addTagsToProduct(product, [31, 32]);
+
+    return res.status(StatusCodes.CREATED).json({ product, tags });
   } catch (error) {
     errorsHandler(req, res, error);
   }
+};
+
+/**
+ *
+ * @param {Product} prodcutIntance - Intance of Product
+ * @param {Array} tags - Tags for adding to one product
+ * @description Function to add tags to one product using Special methods created by Sequelize
+ * @returns [{undefined}] [void]
+ */
+const addTagsToProduct = async (prodcutIntance, tagIDs) => {
+  const tags = await prodcutIntance.addTags(tagIDs);
+  return tags;
 };
 
 const getProducts = async (req, res) => {
@@ -238,7 +251,7 @@ const updateLeftPosition = async (req, res, newPosition, currentPosition) => {
 const deleteProduct = async (req, res) => {
   try {
     const { slug } = req.params;
-    const { userId } = req.body; 
+    const { userId } = req.body;
     let product = await Product.findOne({ where: { slug, userId } });
     if (!product)
       return res.status(StatusCodes.NOT_FOUND).json({
@@ -253,6 +266,15 @@ const deleteProduct = async (req, res) => {
   }
 };
 
+const getLastPosition = async (req, res) => {
+  const lastPosition = await Product.max('position', {
+    where: {
+      userId: 1,
+    },
+  });
+  return lastPosition ? lastPosition : 0;
+};
+
 module.exports = {
   createProduct,
   getProducts,
@@ -260,4 +282,5 @@ module.exports = {
   updateProduct,
   deleteProduct,
   updateProductPosition,
+  getLastPosition,
 };

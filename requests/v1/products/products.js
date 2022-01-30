@@ -1,6 +1,7 @@
 const { body, param } = require('express-validator');
 const validationHandler = require('../../../helpers/handlers/validationHandler');
 const { checkUser } = require('../../../services/v1/users/users');
+const { checkTags } = require('../../../services/v1/tags/tags');
 
 const createProductReq = [
   body('name')
@@ -90,7 +91,16 @@ const createProductReq = [
     .custom(async (userId) => {
       return checkUser(userId);
     }),
-
+  body('tags')
+    .exists()
+    .withMessage('The tags field is required')
+    .bail()
+    .isArray({ min: 1 })
+    .withMessage('The tags field must have at least one tag')
+    .bail()
+    .custom(async (tags) => {
+      return checkTags(tags);
+    }),
   (req, res, next) => {
     validationHandler(req, res, next);
   },
