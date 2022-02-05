@@ -73,7 +73,7 @@ const signIn = async (req, res) => {
     if (!match)
       return res.status(StatusCodes.BAD_REQUEST).json({
         statusCode: StatusCodes.BAD_REQUEST,
-        message: 'Passwords does not match',
+        message: 'The password does not match',
       });
 
     const payload = {
@@ -83,7 +83,9 @@ const signIn = async (req, res) => {
       name: user.name,
     };
 
-    const token = generateJWT(payload);
+    const jwtTimeToLive = 1000 * 60 * 60 + ''; // 1h
+    const { token, ttl } = generateJWT(payload, jwtTimeToLive);
+
     return res.status(StatusCodes.OK).json({
       user: {
         id: user.id,
@@ -91,10 +93,13 @@ const signIn = async (req, res) => {
         email: user.email,
         emailVerifiedAt: user.emailVerifiedAt,
       },
-      token,
+      token: {
+        token,
+        ttl: jwtTimeToLive,
+      },
     });
   } catch (error) {
-    errorsHandler(req, res, error, error.message);
+    errorsHandler(req, res, error);
   }
 };
 
@@ -140,10 +145,8 @@ const confirmAccount = async (req, res) => {
  * @returns [{string}] [Returns the token]
  */
 const generateJWT = (payload, ttl = '1h') => {
-  const token = JWT.sign(payload, secret, {
-    expiresIn: ttl,
-  });
-  return token;
+  const token = JWT.sign(payload, secret, { expiresIn: ttl });
+  return { token, ttl };
 };
 
 /**
@@ -159,12 +162,9 @@ const comparePasswords = async (hash, password) => {
       throw new Error('The hash and password parameters are required');
 
     const comparison = await verify(hash, password);
-    if (!comparison) throw new Error('The passwords are not the same');
-
+    // if (!comparison) throw new Error('The passwords are not the same');
     return comparison;
-  } catch (error) {
-    throw new Error(error.message);
-  }
+  } catch {}
 };
 
 module.exports = {
