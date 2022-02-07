@@ -2,6 +2,9 @@ const { body, param } = require('express-validator');
 const validationHandler = require('../../../helpers/handlers/validationHandler');
 const { checkUser } = require('../../../services/v1/users/users');
 const { checkTags } = require('../../../services/v1/tags/tags');
+const {
+  checkCategories,
+} = require('../../../services/v1/categories/categories');
 
 const createProductReq = [
   body('name')
@@ -101,6 +104,16 @@ const createProductReq = [
     .custom(async (tags) => {
       return checkTags(tags);
     }),
+  body('categories')
+    .exists()
+    .withMessage('The categories field is required')
+    .bail()
+    .isArray({ min: 1 })
+    .withMessage('The categories field must have at least one category')
+    .bail()
+    .custom(async (categories) => {
+      return checkCategories(categories);
+    }),
   (req, res, next) => {
     validationHandler(req, res, next);
   },
@@ -172,6 +185,24 @@ const updateProductReq = [
     .withMessage('The likes field must be a positive number')
     .bail()
     .toInt(),
+
+  body('tags')
+    .optional({ nullable: true })
+    .isArray({ min: 1 })
+    .withMessage('The tags field must have at least one tag')
+    .bail()
+    .custom(async (tags) => {
+      return checkTags(tags);
+    }),
+
+  body('categories')
+    .optional({ nullable: true })
+    .isArray({ min: 1 })
+    .withMessage('The categories field must have at least one category')
+    .bail()
+    .custom(async (categories) => {
+      return checkCategories(categories);
+    }),
 
   body('userId')
     .exists()

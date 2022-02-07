@@ -1,7 +1,7 @@
 'use strict';
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('ProductsTags', {
+    await queryInterface.createTable('ProductsCategories', {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -13,26 +13,23 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          // THIS'S THE REFERENCE TO THE TABLE IN DB
+          // NOTE THIS IS THE REFERENCE TO THE TABLA NAME IN DB
           model: 'Products',
           key: 'id',
         },
-        // NOTE WHEN THE ID IN THE PRODUCT TABLE IS DELETED IT'S GONNA DELETE THIS RECORD TOO
         onDelete: 'CASCADE',
       },
-      tagId: {
+      categoryId: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          // THIS'S THE REFERENCE TO THE TABLE IN DB
-          model: 'Tags',
+          // NOTE THIS IS THE REFERENCE TO THE TABLA NAME IN DB
+          model: 'Categories',
           key: 'id',
         },
-        // NOTE WHEN THE ID IN THE PRODUCT TABLE IS DELETED IT'S GONNA DELETE THIS RECORD TOO
         onDelete: 'CASCADE',
       },
       // ****************
-
       createdAt: {
         allowNull: true,
         type: Sequelize.DATE,
@@ -46,6 +43,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('ProductsTags');
+    await queryInterface.dropTable('ProductsCategories');
   },
 };

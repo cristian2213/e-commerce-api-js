@@ -1,12 +1,18 @@
 const { Op } = require('sequelize');
 const { StatusCodes, ReasonPhrases } = require('http-status-codes');
 const errorsHandler = require('../../../helpers/handlers/errorsHandler');
-const { Product } = require('../../../config/db/models/index');
+const {
+  Product,
+  Category,
+  User,
+  Role,
+  Tag,
+} = require('../../../config/db/models/index');
 const generateSlug = require('../../../helpers/products/generateSlug');
 
 const createProduct = async (req, res) => {
   try {
-    const { userId } = req.body;
+    const { userId, tags: TagIDs, categories: categoriesIDs } = req.body;
     let position = 1;
     const lastPosition = await Product.max('position', {
       where: {
@@ -25,24 +31,15 @@ const createProduct = async (req, res) => {
     });
     await product.reload();
 
-    const tags = await addTagsToProduct(product, [31, 32]);
+    const [tags, categories] = await Promise.all([
+      addTagsToProduct(product, TagIDs),
+      addCategoriesToProduct(product, categoriesIDs),
+    ]);
 
-    return res.status(StatusCodes.CREATED).json({ product, tags });
+    return res.status(StatusCodes.CREATED).json({ product, tags, categories });
   } catch (error) {
     errorsHandler(req, res, error);
   }
-};
-
-/**
- *
- * @param {Product} prodcutIntance - Intance of Product
- * @param {Array} tags - Tags for adding to one product
- * @description Function to add tags to one product using Special methods created by Sequelize
- * @returns [{undefined}] [void]
- */
-const addTagsToProduct = async (prodcutIntance, tagIDs) => {
-  const tags = await prodcutIntance.addTags(tagIDs);
-  return tags;
 };
 
 const getProducts = async (req, res) => {
@@ -58,6 +55,53 @@ const getProducts = async (req, res) => {
 
     const totalProducts = await Product.count({ where });
     const products = await Product.findAll({
+      attributes: [
+        'id',
+        'name',
+        'title',
+        'description',
+        'price',
+        'slug',
+        'stock',
+        'likes',
+        'position',
+      ],
+      include: [
+        {
+          model: Category,
+          as: 'categories',
+          attributes: ['id', 'name'],
+          require: true,
+          through: {
+            // NOTE WITHOUT PIVOT TABLE
+            attributes: [],
+          },
+        },
+        {
+          model: Tag,
+          as: 'tags',
+          attributes: ['id', 'name'],
+          require: true,
+          through: {
+            // NOTE WITHOUT PIVOT TABLE
+            attributes: [],
+          },
+        },
+        {
+          model: User,
+          as: 'user',
+          attributes: ['id', 'name', 'email', 'emailVerifiedAt'],
+          require: true, // From OUTER JOIN to an INNER JOIN
+          include: [
+            {
+              model: Role,
+              as: 'roles',
+              attributes: ['id', 'name'],
+              require: true,
+            },
+          ],
+        },
+      ],
       where,
       order: [['position', 'ASC']],
       limit: limit ? +limit : limitByDefault,
@@ -101,8 +145,31 @@ const getProduct = async (req, res) => {
 const updateProduct = async (req, res) => {
   try {
     const { slug } = req.params;
-    const { userId, likes, slug: newSLug } = req.body;
-    const product = await Product.findOne({ where: { slug, userId } });
+    const { userId, likes, slug: newSLug, categories, tags } = req.body;
+    const product = await Product.findOne({
+      include: [
+        {
+          model: Category,
+          as: 'categories',
+          attributes: ['id'],
+          through: {
+            // NOTE WITHOUT PIVOT TABLE
+            attributes: [],
+          },
+        },
+        {
+          model: Tag,
+          as: 'tags',
+          attributes: ['id'],
+          through: {
+            // NOTE WITHOUT PIVOT TABLE
+            attributes: [],
+          },
+        },
+      ],
+      where: { slug, userId },
+    });
+
     if (!product)
       return res.status(StatusCodes.NOT_FOUND).json({
         statusCode: StatusCodes.NOT_FOUND,
@@ -111,6 +178,24 @@ const updateProduct = async (req, res) => {
     if (likes) req.body.likes += product.likes;
 
     if (newSLug) req.body.slug = generateSlug(newSLug);
+
+    if (categories && tags)
+      await Promise.all([
+        deleteCategoriesFromProduct(product, product.categories),
+        deleteTagsFromProduct(product, product.tags),
+        addCategoriesToProduct(product, categories),
+        addTagsToProduct(product, tags),
+      ]);
+
+    if (categories) {
+      await deleteCategoriesFromProduct(product, product.categories),
+        await addCategoriesToProduct(product, categories);
+    }
+
+    if (tags) {
+      await deleteTagsFromProduct(product, product.tags);
+      await addTagsToProduct(product, tags);
+    }
 
     const updatedProduct = await product.update(req.body);
     await updatedProduct.reload();
@@ -266,6 +351,13 @@ const deleteProduct = async (req, res) => {
   }
 };
 
+/**
+ *
+ * @param {Request} req
+ * @param {Response} res
+ * @description Helper function to get the last position of a product
+ * @returns [{Object|number}] [Returns an Object with the property 'position' | Returns the number '0'];
+ */
 const getLastPosition = async (req, res) => {
   const lastPosition = await Product.max('position', {
     where: {
@@ -273,6 +365,51 @@ const getLastPosition = async (req, res) => {
     },
   });
   return lastPosition ? lastPosition : 0;
+};
+
+/**
+ *
+ * @param {Product} prodcutIntance - Instance of Product
+ * @param {Array} tags - Tags to adding to one product
+ * @description Function to add tags to one product using Special methods created by Sequelize
+ * @returns [{ProductTags[]}] [Returns an Array of ProductsTags]
+ */
+const addTagsToProduct = async (prodcutIntance, tagIDs) => {
+  const tags = await prodcutIntance.addTags(tagIDs);
+  return tags;
+};
+
+/**
+ *
+ * @param {Product} productInstance - Instance of Product
+ * @param {Array} categoryIDs - Categories to associte with one product
+ * @description Function to add categories to one product using Special methods created by Sequelize
+ * @returns [{ProductsCategories[]}] [Returns an Array of ProductsCategories]
+ */
+const addCategoriesToProduct = async (productInstance, categoryIDs) => {
+  const categories = await productInstance.addCategories(categoryIDs);
+  return categories;
+};
+/**
+ *
+ * @param {Product} productInstance - Instance of Product
+ * @param {Array} categoryIDs - Categories to associte with one product
+ * @description Function to delete categories to one product using Special methods created by Sequelize
+ * @returns [{undefined}] [void]
+ */
+const deleteCategoriesFromProduct = async (productInstance, categoryIDs) => {
+  await productInstance.removeCategories(categoryIDs);
+};
+
+/**
+ *
+ * @param {Product} prodcutIntance - Instance of Product
+ * @param {Array} tagsIDs - Tags id to add to one product
+ * @description Function to delete tags to one product using Special methods created by Sequelize
+ * @returns [{undefined}] [void]
+ */
+const deleteTagsFromProduct = async (productInstance, tagsIDs) => {
+  await productInstance.removeTags(tagsIDs);
 };
 
 module.exports = {

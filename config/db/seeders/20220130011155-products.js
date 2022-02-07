@@ -1,6 +1,7 @@
 'use strict';
 const { getLastPosition } = require('../../../services/v1/products/products');
 const { faker } = require('@faker-js/faker');
+const { User } = require('../models/index');
 
 module.exports = {
   async up(queryInterface, Sequelize) {
@@ -13,6 +14,18 @@ module.exports = {
      *   isBetaMember: false
      * }], {});
      */
+    let user = await User.findByPk(1);
+    if (!user)
+      user = await User.create({
+        name: 'admin',
+        email: 'admin@gmail.com',
+        password: 'admin123A@',
+        confirmPassword: 'admin123A@',
+        roles: ['admin'],
+        accountConfirmationPath: 'https://www.test.com/',
+        emailVerifiedAt: new Date(),
+      });
+
     let lastPosition = await getLastPosition();
     const products = [];
     for (let i = 0; i < 10; i++) {
@@ -26,7 +39,7 @@ module.exports = {
         stock: Math.round(Math.random() * 100),
         likes: Math.round(Math.random() * 10),
         position: lastPosition,
-        userId: 1, // admin by defaul
+        userId: user.id, // admin by defaul
       });
       lastPosition++;
     }

@@ -22,6 +22,12 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'productId',
         as: 'tags',
       });
+
+      Product.belongsToMany(models.Category, {
+        through: 'ProductsCategories',
+        foreignKey: 'productId',
+        as: 'categories',
+      });
       // ********************************
     }
   }
