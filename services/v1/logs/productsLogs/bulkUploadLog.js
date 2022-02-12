@@ -100,7 +100,6 @@ const downloadLog = async (req, res) => {
 
 const getLogs = async (req, res) => {
   const { userId } = req.body;
-
   try {
     const logs = await Log.findAll({
       attributes: { exclude: ['errors', 'filePath', 'deletedAt'] },
