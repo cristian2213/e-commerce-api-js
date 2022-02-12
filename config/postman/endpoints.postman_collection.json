@@ -1,0 +1,1258 @@
+{
+	"info": {
+		"_postman_id": "c6d8530c-d3a7-4529-9e23-20931843cd23",
+		"name": "endpoints",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "auth",
+			"item": [
+				{
+					"name": "signUp",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disabledSystemHeaders": {
+							"content-type": true
+						}
+					},
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"admin\",\r\n    \"email\": \"admin3@gmail.com\",\r\n    \"password\": \"admin123A@\",\r\n    \"confirmPassword\": \"admin123A@\",\r\n    \"roles\": [\"admin\"],\r\n    \"accountConfirmationPath\": \"https://www.google.com/\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/auth/signup",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"auth",
+								"signup"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const token = JSON.parse(responseBody);\r",
+									"pm.environment.set(\"token\", token.token.token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"admin3@gmail.com\",\r\n    \"password\": \"admin123A@\"\r\n}"
+						},
+						"url": {
+							"raw": "{{host}}/auth/signin",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"auth",
+								"signin"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "confirm account",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/auth/confirm-email/d70a8de1e234e1db3375103d54274eba34ed5b7e1d32",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"auth",
+								"confirm-email",
+								"d70a8de1e234e1db3375103d54274eba34ed5b7e1d32"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "users",
+			"item": [
+				{
+					"name": "create user",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"admin asdfasdf\",\r\n    \"email\": \"admin32@admin.com\",\r\n    \"password\": \"admin123A@\",\r\n    \"confirmPassword\": \"admin123A@\",\r\n    \"roles\": [\"admin\", \"customer\"],\r\n    \"accountConfirmationPath\": \"https://google.com\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/users/create",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"users",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get users",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "x-access-token",
+								"value": "{{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/users/get-users",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"users",
+								"get-users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get user",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "x-access-token",
+								"value": "{{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/users/get-user/2",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"users",
+								"get-user",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update user",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "x-access-token",
+								"value": "87d13811d892bd7861bc2bd95282a4dbd35ede7beced",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"id\": 3,\r\n    \"email\": \"admin32edited@admin.com\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/users/update-user/3",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"users",
+								"update-user",
+								"3"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete user",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "x-access-token",
+								"value": "{{token}}",
+								"type": "string"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/users/delete-user/2",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"users",
+								"delete-user",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "reset password #3",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"password\": \"admin123A@1\",\r\n    \"confirmPassword\": \"admin123A@1\"\r\n}"
+						},
+						"url": {
+							"raw": "{{host}}/users/reset-password/{{resetPasswordToken}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"users",
+								"reset-password",
+								"{{resetPasswordToken}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "confirm token #2",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"password\": \"admin123A@1\"\r\n}"
+						},
+						"url": {
+							"raw": "{{host}}/users/reset-password/{{resetPasswordToken}}",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"users",
+								"reset-password",
+								"{{resetPasswordToken}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "reset password #1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const token = JSON.parse(responseBody);\r",
+									"pm.environment.set(\"resetPasswordToken\", token.token);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"admin@gmail.com\"\r\n}"
+						},
+						"url": {
+							"raw": "{{host}}/users/reset-password/",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"users",
+								"reset-password",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "roles",
+			"item": [
+				{
+					"name": "create role",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"admin asdfasdf\",\r\n    \"email\": \"admin3@admin.com\",\r\n    \"password\": \"admin123A@\",\r\n    \"confirmPassword\": \"admin123A@\",\r\n    \"role\": \"customer\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/users/create",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"users",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get roles",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/roles/get-roles",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"roles",
+								"get-roles"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get role",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/users/get-user/1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"users",
+								"get-user",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update role",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"admin edit\",\r\n    \"email\": \"admin1edit@admin.com\",\r\n    \"password\": \"admin123A@edit\",\r\n    \"role\": \"customer\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/users/update-user/1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"users",
+								"update-user",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete role",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/users/update-user/1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"users",
+								"update-user",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "products",
+			"item": [
+				{
+					"name": "products bulk upload",
+					"item": [
+						{
+							"name": "XLXS file",
+							"item": [
+								{
+									"name": "upload products validation for XLSX file",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "multipart/form-data",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "formdata",
+											"formdata": [
+												{
+													"key": "productsFile",
+													"type": "file",
+													"src": "/C:/Users/crist/projects/node-laravel-django/e-commerce/products-excel-02.xlsx"
+												},
+												{
+													"key": "uploadingType",
+													"value": "xlsxFile",
+													"type": "text"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{host}}/products/bulk-upload-validation",
+											"host": [
+												"{{host}}"
+											],
+											"path": [
+												"products",
+												"bulk-upload-validation"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "upload products for XLSX file",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "multipart/form-data",
+												"type": "text",
+												"disabled": true
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"type": "string"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"uploadingType\": \"xlsxFile\",\r\n    \"filePath\": \"C:\\\\Users\\\\crist\\\\projects\\\\node-laravel-django\\\\e-commerce-migration\\\\storage\\\\docs\\\\products\\\\ef3ae0716a879ca1f949-products-excel-02.xlsx\",\r\n    \"productData\": {\r\n        \"name\": \"A\",\r\n        \"title\": \"B\",\r\n        \"description\": \"C\",\r\n        \"price\": \"D\",\r\n        \"stock\": \"E\"\r\n    },\r\n    \"userId\": 1\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{host}}/products/bulk-upload/",
+											"host": [
+												"{{host}}"
+											],
+											"path": [
+												"products",
+												"bulk-upload",
+												""
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "CSV file",
+							"item": [
+								{
+									"name": "upload products validation for CSV file",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "multipart/form-data",
+												"type": "text"
+											}
+										],
+										"body": {
+											"mode": "formdata",
+											"formdata": [
+												{
+													"key": "productsFile",
+													"type": "file",
+													"src": "/C:/Users/crist/projects/node-laravel-django/e-commerce/products.csv"
+												},
+												{
+													"key": "uploadingType",
+													"value": "csvFile",
+													"type": "text"
+												}
+											]
+										},
+										"url": {
+											"raw": "{{host}}/products/bulk-upload-validation",
+											"host": [
+												"{{host}}"
+											],
+											"path": [
+												"products",
+												"bulk-upload-validation"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "upload products for CSV file",
+									"request": {
+										"method": "POST",
+										"header": [
+											{
+												"key": "Content-Type",
+												"value": "multipart/form-data",
+												"type": "text",
+												"disabled": true
+											},
+											{
+												"key": "Content-Type",
+												"value": "application/json",
+												"type": "string"
+											}
+										],
+										"body": {
+											"mode": "raw",
+											"raw": "{\r\n    \"uploadingType\": \"csvFile\",\r\n    \"filePath\": \"C:\\\\Users\\\\crist\\\\projects\\\\node-laravel-django\\\\e-commerce-migration\\\\storage\\\\docs\\\\products\\\\643773e943cd246c6aee-products.csv\",\r\n    \"productData\": {\r\n        \"name\": \"name\",\r\n        \"title\": \"title\",\r\n        \"description\": \"description\",\r\n        \"price\": \"price\",\r\n        \"stock\": \"stock\"\r\n    },\r\n    \"userId\": 1\r\n}",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
+										"url": {
+											"raw": "{{host}}/products/bulk-upload/",
+											"host": [
+												"{{host}}"
+											],
+											"path": [
+												"products",
+												"bulk-upload",
+												""
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "update position",
+					"item": [
+						{
+							"name": "update position",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"userId\": 1,\r\n    \"position\": 3\r\n}"
+								},
+								"url": {
+									"raw": "{{host}}/products/update-position/2",
+									"host": [
+										"{{host}}"
+									],
+									"path": [
+										"products",
+										"update-position",
+										"2"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "get Product",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"userId\": 1\r\n}"
+						},
+						"url": {
+							"raw": "{{host}}/products/get-product/d8f88974-85c6-49dc-a546-0ecad01c30d4",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"products",
+								"get-product",
+								"d8f88974-85c6-49dc-a546-0ecad01c30d4"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get products",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"userId\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/products/get-products?offset=10&limit=100",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"products",
+								"get-products"
+							],
+							"query": [
+								{
+									"key": "offset",
+									"value": "10"
+								},
+								{
+									"key": "userId",
+									"value": "1",
+									"disabled": true
+								},
+								{
+									"key": "limit",
+									"value": "100"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "create product",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"product2\",\r\n    \"title\": \"product title\",\r\n    \"description\": \"this is a big description, but you can split out\",\r\n    \"price\": 1000.00,\r\n    \"slug\": \"product-slug\",\r\n    \"stock\": 1,\r\n    \"likes\": 1,\r\n    \"userId\": 1,\r\n    \"tags\": [1],\r\n    \"categories\": [1, 2, 3]\r\n}"
+						},
+						"url": {
+							"raw": "{{host}}/products/create-product/",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"products",
+								"create-product",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update product",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"userId\": 1,\r\n    \"tags\": [2],\r\n    \"categories\": [2]\r\n    // \"name\": \"product1 e\",\r\n    // \"title\": \"product title e\",\r\n    // \"description\": \"this is a big description, but you can split out e\",\r\n    // \"price\": 2000.00,\r\n    // \"slug\": \"product-slug-ed\",\r\n    // \"stock\": 1,\r\n    // \"likes\": 10,\r\n}"
+						},
+						"url": {
+							"raw": "{{host}}/products/update-product/product-slug-2CvRAledTHOGAizVjD4Zc",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"products",
+								"update-product",
+								"product-slug-2CvRAledTHOGAizVjD4Zc"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete product",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"userId\": 1\r\n}"
+						},
+						"url": {
+							"raw": "{{host}}/products/delete-product/product-slug-ed-LRu7-fn9Cse1hEdHqoIdX",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"products",
+								"delete-product",
+								"product-slug-ed-LRu7-fn9Cse1hEdHqoIdX"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "logs",
+			"item": [
+				{
+					"name": "get logs",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"userId\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/logs/get-logs",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"logs",
+								"get-logs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get log",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"userId\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/logs/get-log/1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"logs",
+								"get-log",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete log",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"userId\": 1\r\n}"
+						},
+						"url": {
+							"raw": "{{host}}/logs/delete-log/2",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"logs",
+								"delete-log",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "download log",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "default"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"userId\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/logs/download-log/5",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"logs",
+								"download-log",
+								"5"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "tags",
+			"item": [
+				{
+					"name": "get tags",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/get-tags",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"get-tags"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get tag",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/get-tag/1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"get-tag",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete log",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/logs/delete-log/1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"logs",
+								"delete-log",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update tag",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{host}}/update-tag/1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"update-tag",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "create tag",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"food2\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/tags/create-tag/",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"tags",
+								"create-tag",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "carts",
+			"item": [
+				{
+					"name": "get cart with products",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "x-access-token",
+								"value": "{{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "{{host}}/carts/1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"carts",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "add products to cart",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "{{tokenKey}}",
+								"value": "{{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"product\": {\"id\": 2, \"quantity\": 2}\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host}}/carts",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"carts"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete cart product",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "{{tokenKey}}",
+								"value": "{{token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{host}}/carts/1",
+							"host": [
+								"{{host}}"
+							],
+							"path": [
+								"carts",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
