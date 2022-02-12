@@ -397,9 +397,9 @@ const addCategoriesToProduct = async (productInstance, categoryIDs) => {
  * @description Function to delete categories to one product using Special methods created by Sequelize
  * @returns [{undefined}] [void]
  */
-const deleteCategoriesFromProduct = async (productInstance, categoryIDs) => {
+async function deleteCategoriesFromProduct(productInstance, categoryIDs) {
   await productInstance.removeCategories(categoryIDs);
-};
+}
 
 /**
  *
@@ -408,9 +408,29 @@ const deleteCategoriesFromProduct = async (productInstance, categoryIDs) => {
  * @description Function to delete tags to one product using Special methods created by Sequelize
  * @returns [{undefined}] [void]
  */
-const deleteTagsFromProduct = async (productInstance, tagsIDs) => {
+async function deleteTagsFromProduct(productInstance, tagsIDs) {
   await productInstance.removeTags(tagsIDs);
-};
+}
+
+async function checkProduct(productId) {
+  const product = await Product.findByPk(productId);
+
+  // TO VALIDATE MORE THAN ONE PRODUCT BY ID
+  // if (products.length < productsIDs.length) {
+  //   const productsId = productsIDs.map((product) => product.id);
+  //   const noProducts = productsIDs.filter((id) => {
+  //     if (!productsId.include(id)) return id;
+  //   });
+  //   throw new Error(
+  //     `Some products do not exist, products found ${productsIDs.join(
+  //       ', '
+  //     )}, products without results ${noProducts.join(', ')}`
+  //   );
+  // }
+
+  if (!product) throw new Error(`The product #${productId} doesn't exist`);
+  return true;
+}
 
 module.exports = {
   createProduct,
@@ -420,4 +440,5 @@ module.exports = {
   deleteProduct,
   updateProductPosition,
   getLastPosition,
+  checkProduct,
 };

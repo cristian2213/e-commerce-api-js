@@ -81,6 +81,7 @@ const readCSVFile = (req, res) => {
 
   reader
     .pipe(
+      // THE DATA IS DELIVERED USING THE PIPE TO CONNECT WITH THE FUNCTION CSV THAT TO THE END IT'S GONNA PARSE THE COMING DATA.
       csv({
         mapHeaders: ({ header }) => {
           return validator.escape(header).trim().toLowerCase();

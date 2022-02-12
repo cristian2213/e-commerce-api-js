@@ -10,6 +10,13 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
+      // ******** 1:1 ********
+      User.hasOne(models.Cart, {
+        foreignKey: 'userId',
+        as: 'cart',
+      });
+      // *********************
+
       // ******** 1:N ********
       User.hasMany(models.Role, {
         // The foreing key should be provided here, on the contrary the model with the fk will returns two FKs
