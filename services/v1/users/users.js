@@ -29,7 +29,11 @@ const createUser = async (req, res) => {
     });
 
     req.body.id = user.id;
-    const userRoles = await createRoles(req, res);
+
+    const [userRoles, cart] = await Promise.all([
+      createRoles(req, res),
+      user.createCart(),
+    ]);
 
     const responseUser = {
       id: user.id,
@@ -37,6 +41,7 @@ const createUser = async (req, res) => {
       email: user.email,
       roles: userRoles,
       token,
+      cart,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };
@@ -147,11 +152,14 @@ const updateUser = async (req, res) => {
 const getUser = async (req, res) => {
   try {
     const user = await User.findByPk(req.params.id, {
-      include: {
-        model: Role,
-        as: 'roles',
-        attributes: ['name'],
-      },
+      include: [
+        {
+          model: Role,
+          as: 'roles',
+          attributes: ['name'],
+        },
+        'cart',
+      ],
       attributes: ['id', 'name', 'email', 'createdAt', 'updatedAt'],
     });
 
