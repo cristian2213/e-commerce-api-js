@@ -1,7 +1,7 @@
 const { Op } = require('sequelize');
 const argon2 = require('argon2');
 const { StatusCodes, ReasonPhrases } = require('http-status-codes');
-const { User, Role } = require('../../../config/db/models/index');
+const { User, Role, Connection } = require('../../../config/db/models/index');
 const errorsHandler = require('../../../helpers/handlers/errorsHandler');
 const generateRandomToken = require('../../../helpers/tokens/generateRandomToken');
 const { createRoles, deleteRoles } = require('../roles/roles');
@@ -14,7 +14,7 @@ const { createRoles, deleteRoles } = require('../roles/roles');
  * @description Function to get all users from database
  * @returns [{Object|Object}] [Returns an User object | Json object]
  */
-const createUser = async (req, res) => {
+async function createUser(req, res) {
   try {
     const payload = req.body;
     const { name, email, password } = payload;
@@ -52,7 +52,7 @@ const createUser = async (req, res) => {
   } catch (error) {
     errorsHandler(req, res, error);
   }
-};
+}
 
 /**
  * getUsers(req, res)
@@ -62,7 +62,7 @@ const createUser = async (req, res) => {
  * @description Function to get all users from database
  * @returns [{ Object[] }] [Returns an object array of Users]
  */
-const getUsers = async (req, res) => {
+async function getUsers(req, res) {
   try {
     const users = await User.findAll({
       include: {
@@ -77,7 +77,7 @@ const getUsers = async (req, res) => {
   } catch (error) {
     errorsHandler(req, res, error);
   }
-};
+}
 
 /**
  * updateUser(req, res)
@@ -87,7 +87,7 @@ const getUsers = async (req, res) => {
  * @description Function to update an user from database
  * @returns [{Object|Object}] [Returns a Json object | User object]
  */
-const updateUser = async (req, res) => {
+async function updateUser(req, res) {
   try {
     const { id } = req.params;
 
@@ -139,7 +139,7 @@ const updateUser = async (req, res) => {
   } catch (error) {
     errorsHandler(req, res, error);
   }
-};
+}
 
 /**
  * getUser(req, res)
@@ -149,7 +149,7 @@ const updateUser = async (req, res) => {
  * @description Function to get an user from database
  * @returns [{Object}] [Returns a Json object]
  */
-const getUser = async (req, res) => {
+async function getUser(req, res) {
   try {
     const user = await User.findByPk(req.params.id, {
       include: [
@@ -172,7 +172,7 @@ const getUser = async (req, res) => {
   } catch (error) {
     errorsHandler(req, res, error);
   }
-};
+}
 
 /**
  * deleteUser(req, res)
@@ -182,7 +182,7 @@ const getUser = async (req, res) => {
  * @description Function to delete an user from database
  * @returns [{Object}] [Returns a Json object]
  */
-const deleteUser = async (req, res) => {
+async function deleteUser(req, res) {
   try {
     const id = req.params.id;
     const user = await User.findByPk(id, {
@@ -206,7 +206,7 @@ const deleteUser = async (req, res) => {
   } catch (error) {
     errorsHandler(req, res, error);
   }
-};
+}
 
 /**
  * emailExists(req, res)
@@ -215,7 +215,7 @@ const deleteUser = async (req, res) => {
  * @description Helper function to check if the user email exists
  * @returns [{Object|boolean}] [Returns an User object | false]
  */
-const emailExists = async (req, res) => {
+async function emailExists(req, res) {
   const { id } = req.params || req.body;
   const user = await User.findOne({
     attributes: ['id', 'email'],
@@ -231,7 +231,7 @@ const emailExists = async (req, res) => {
     },
   });
   return user ? true : false;
-};
+}
 
 /**
  * resetPassword(req, res)
@@ -240,7 +240,7 @@ const emailExists = async (req, res) => {
  * @description Function to reset password by email
  * @returns [{Object}] [Returns a Json object]
  */
-const resetPassword = async (req, res) => {
+async function resetPassword(req, res) {
   try {
     const { email } = req.body;
     const user = await User.findOne({
@@ -266,7 +266,6 @@ const resetPassword = async (req, res) => {
     const resetLink = `http://${req.headers.host}${req.baseUrl}/reset-password/${data.token}`; // FIXME in production mode to https (front route)
 
     // FIXME TO CALL HERE THE FUNCTION TO SEND EMAIL
-
     return res.status(StatusCodes.OK).json({
       statusCode: StatusCodes.OK,
       message:
@@ -276,7 +275,7 @@ const resetPassword = async (req, res) => {
   } catch (error) {
     errorsHandler(req, res, error);
   }
-};
+}
 
 /**
  * confirmToken(req, res)
@@ -285,7 +284,7 @@ const resetPassword = async (req, res) => {
  * @description Function to confirm the token sent to the mail, If It has a valid token the UI should show the component to change the password
  * @returns [{Object}] [Returns a Json object]
  */
-const confirmToken = async (req, res) => {
+async function confirmToken(req, res) {
   try {
     const user = await certifyToken(req, res);
     if (user === false) {
@@ -304,7 +303,7 @@ const confirmToken = async (req, res) => {
   } catch (error) {
     errorsHandler(req, res, error);
   }
-};
+}
 
 /**
  * updatePassword(req, res)
@@ -313,7 +312,7 @@ const confirmToken = async (req, res) => {
  * @description Function to change the password
  * @returns [{Object}] [Returns a Json object]
  */
-const updatePassword = async (req, res) => {
+async function updatePassword(req, res) {
   try {
     const { password } = req.body;
     const user = await certifyToken(req, res);
@@ -338,7 +337,7 @@ const updatePassword = async (req, res) => {
   } catch (error) {
     errorsHandler(req, res, error);
   }
-};
+}
 
 /**
  * certifyToken(req, res)
@@ -347,7 +346,7 @@ const updatePassword = async (req, res) => {
  * @description Helper function to check if the token is active
  * @returns [{Object|boolean}] [Returns an User object | false]
  */
-const certifyToken = async (req, res) => {
+async function certifyToken(req, res) {
   const { token } = req.params;
   const user = await User.findOne({
     where: {
@@ -359,7 +358,7 @@ const certifyToken = async (req, res) => {
   });
 
   return user ? user : false;
-};
+}
 
 /**
  * findByEmail(req, res)
@@ -368,7 +367,7 @@ const certifyToken = async (req, res) => {
  * @description Helper function to check if the user exists
  * @returns [{Object|null}] [Returns a User object | null]
  */
-const findByEmail = async (email) => {
+async function findByEmail(email) {
   const user = await User.findOne({
     attributes: [
       'id',
@@ -384,7 +383,7 @@ const findByEmail = async (email) => {
     },
   });
   return user;
-};
+}
 
 /**
  * checkUser(req, res)
@@ -393,7 +392,7 @@ const findByEmail = async (email) => {
  * @throws {Error} Throw an error if the user doesn't exist
  * @returns [{undefined}] [void]
  */
-const checkUser = async (userId) => {
+async function checkUser(userId) {
   try {
     const user = await User.findByPk(userId);
     if (!user) throw new Error(`The user with the ID ${userId} doesn't exist`);
@@ -404,7 +403,41 @@ const checkUser = async (userId) => {
       throw new Error(`Validation error, please try again`);
     throw error;
   }
-};
+}
+/**
+ * registerUserConnection(userId,  connection = 'connected')
+ * @param {number} userId
+ * @param {string} connection - Available connections ['connected','disconnected']
+ * @description Helper function to register user connection
+ * @returns  [{Object}] [Returns an Object]
+ */
+async function registerUserConnections(userId, connection = 'connected') {
+  const lastConnection = await Connection.findOne({
+    attributes: ['id', 'connectionType', 'time'],
+    where: {
+      userId,
+    },
+    order: [['id', 'DESC']],
+  });
+
+  let response;
+  if (lastConnection && lastConnection.connectionType === connection)
+    response = {
+      statusCode: 400,
+    };
+
+  if (!lastConnection || lastConnection.connectionType !== connection) {
+    await Connection.create({
+      userId,
+      time: new Date(),
+      connectionType: connection,
+    });
+    response = {
+      statusCode: 200,
+    };
+  }
+  return response;
+}
 
 module.exports = {
   createUser,
@@ -418,4 +451,5 @@ module.exports = {
   updatePassword,
   certifyToken,
   checkUser,
+  registerUserConnections,
 };

@@ -7,6 +7,7 @@ const logsRoutes = require('./modules/logs');
 const rolesRoutes = require('./modules/roles');
 const tagsRoutes = require('./modules/tags');
 const cartsRoutes = require('./modules/carts');
+const statisticsRoutes = require('./modules/statistics');
 
 router.use('/auth', authRoutes);
 router.use('/users', usersRoutes);
@@ -15,5 +16,6 @@ router.use('/products', productsRoutes);
 router.use('/logs', logsRoutes);
 router.use('/tags', tagsRoutes);
 router.use('/carts', cartsRoutes);
+router.use('/statistics', statisticsRoutes);
 
 module.exports = router;

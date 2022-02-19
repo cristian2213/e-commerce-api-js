@@ -1,7 +1,12 @@
 const JWT = require('jsonwebtoken');
 const { verify } = require('argon2');
 const { StatusCodes, ReasonPhrases } = require('http-status-codes');
-const { createUser, certifyToken, findByEmail } = require('../users/users');
+const {
+  createUser,
+  certifyToken,
+  findByEmail,
+  registerUserConnections,
+} = require('../users/users');
 const errorsHandler = require('../../../helpers/handlers/errorsHandler');
 const { sendEmail } = require('../emails/sendEmails');
 const config = require('../../../config');
@@ -84,7 +89,19 @@ const signIn = async (req, res) => {
     };
 
     const jwtTimeToLive = 1000 * 60 * 60 + ''; // 1h
-    const { token, ttl } = generateJWT(payload, jwtTimeToLive);
+
+    const { token, ttl } = generateJWT(
+      payload,
+      +jwtTimeToLive + 1000 * 120 + ''
+    );
+
+    const response = await registerUserConnections(user.id);
+    if (response.statusCode === 400) {
+      return res.status(response.statusCode).json({
+        statusCode: response.statusCode,
+        message: "User can't log in with an active session",
+      });
+    }
 
     return res.status(StatusCodes.OK).json({
       user: {
@@ -102,6 +119,22 @@ const signIn = async (req, res) => {
     errorsHandler(req, res, error);
   }
 };
+
+async function signOut(req, res) {
+  const { sub: userId } = req.user;
+  try {
+    const response = await registerUserConnections(userId, 'disconnected');
+    return res.status(response.statusCode).json({
+      statusCode: response.statusCode,
+      message:
+        response.statusCode === 200
+          ? 'User disconnected successfully'
+          : "User can't be disconnected without before logging in",
+    });
+  } catch (error) {
+    errorsHandler(req, res, error);
+  }
+}
 
 /**
  * confirmAccount(req, res)
@@ -173,4 +206,5 @@ module.exports = {
   generateJWT,
   comparePasswords,
   confirmAccount,
+  signOut,
 };
